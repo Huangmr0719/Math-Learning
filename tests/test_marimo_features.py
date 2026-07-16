@@ -118,7 +118,10 @@ def test_course_map_uses_semantic_html_instead_of_dynamic_markdown_table():
     assert '<table class="gm-course-table">' in html
     assert html.count("<tr>") == 3  # one header row and two chapter rows
     assert "标题 &lt;不会被当作 HTML&gt;" in html
-    assert 'href="?file=part/01.py"' in html
+    assert (
+        f'href="?file={ROOT}/notebooks/part/01.py"'
+        in html
+    )
     assert 'target="_blank"' in html
     assert 'rel="noopener noreferrer"' in html
     assert "is-next" in html
@@ -141,7 +144,7 @@ def test_every_course_map_link_uses_an_existing_workspace_notebook():
         notebook_path = NOTEBOOKS / chapter.part / chapter.filename
         assert notebook_path.is_file()
         assert (
-            f'href="?file={chapter.part}/{chapter.filename}"' in html
+            f'href="?file={notebook_path}"' in html
         )
 
 
@@ -150,24 +153,27 @@ def test_chapter_navigation_handles_first_middle_and_last_chapters():
     middle = chapter_navigation(CHAPTERS[15])._repr_html_()
     last = chapter_navigation(CHAPTERS[30])._repr_html_()
 
-    assert 'href="?file=00_home.py"' in first
+    assert f'href="?file={NOTEBOOKS / "00_home.py"}"' in first
     assert "← 上一章" not in first
-    assert 'href="?file=part01_vae/02_latent_distribution.py"' in first
+    assert (
+        f'href="?file={NOTEBOOKS / "part01_vae/02_latent_distribution.py"}"'
+        in first
+    )
 
     assert (
-        'href="?file=part03_diffusion_ddpm/14_iterative_denoising.py"'
+        f'href="?file={NOTEBOOKS / "part03_diffusion_ddpm/14_iterative_denoising.py"}"'
         in middle
     )
     assert (
-        'href="?file=part03_diffusion_ddpm/'
-        '16_ddpm_posterior_and_reverse.py"' in middle
+        f'href="?file={NOTEBOOKS / "part03_diffusion_ddpm/16_ddpm_posterior_and_reverse.py"}"'
+        in middle
     )
     assert "← 上一章" in middle
     assert "下一章 →" in middle
 
     assert (
-        'href="?file=part06_flow_matching/'
-        '29_optimal_transport_and_rectified_flow.py"' in last
+        f'href="?file={NOTEBOOKS / "part06_flow_matching/29_optimal_transport_and_rectified_flow.py"}"'
+        in last
     )
     assert "下一章 →" not in last
     assert 'aria-label="章节导航"' in last
@@ -182,9 +188,7 @@ def test_every_adjacent_chapter_navigation_link_targets_a_real_notebook():
                 continue
             notebook = NOTEBOOKS / adjacent.part / adjacent.filename
             assert notebook.is_file()
-            assert (
-                f'href="?file={adjacent.part}/{adjacent.filename}"' in html
-            )
+            assert f'href="?file={notebook}"' in html
 
 
 def test_every_formal_chapter_is_a_real_reactive_marimo_notebook():

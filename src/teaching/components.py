@@ -8,11 +8,15 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
 from html import escape
+from pathlib import Path
 from urllib.parse import quote
 
 import marimo as mo
 
 from .catalog import CHAPTERS, PARTS, ChapterSpec
+
+
+NOTEBOOKS_ROOT = Path(__file__).resolve().parents[2] / "notebooks"
 
 
 def course_styles() -> mo.Html:
@@ -314,12 +318,15 @@ def course_map_table(
 
 
 def _workspace_notebook_href(path: str) -> str:
-    """Build a link understood by a marimo directory workspace."""
+    """Build a notebook link that works in every marimo workspace mode."""
 
-    notebook_path = path.removeprefix("./")
-    # marimo 的目录工作区通过根页面的 `file` 查询参数选择 notebook。
-    # 普通相对链接会被浏览器解释为 HTTP 路径，因而得到 404。
-    return f"?file={quote(notebook_path, safe='/')}"
+    notebook_path = Path(path.removeprefix("./"))
+    if not notebook_path.is_absolute():
+        notebook_path = NOTEBOOKS_ROOT / notebook_path
+    # 绝对路径同时兼容以下启动方式：
+    # marimo edit notebooks/00_home.py、marimo edit notebooks、marimo edit .
+    # 路径在运行时由当前仓库位置生成，项目移动后会自动更新。
+    return f"?file={quote(str(notebook_path.resolve()), safe='/')}"
 
 
 def chapter_navigation(spec: ChapterSpec) -> mo.Html:

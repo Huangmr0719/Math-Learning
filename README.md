@@ -55,9 +55,9 @@ python -m pip install -e .
 marimo edit notebooks
 ```
 
-浏览器打开后，先选择 `00_home.py` 进入课程首页。不要使用
-`marimo edit notebooks/00_home.py` 单独启动首页：单文件模式不会注册其他
-30 个章节，因此首页中的章节入口无法打开。
+浏览器打开后，先选择 `00_home.py` 进入课程首页。课程链接在运行时解析为
+当前仓库中的 Notebook 路径，因此也兼容直接运行
+`marimo edit notebooks/00_home.py`；不过目录工作区更方便浏览全部章节。
 
 第一次学习建议从第 1 章开始。首页提供六个部分的课程地图、章节状态、
 统一符号索引和跨模型符号切换说明。章节链接会在新标签页中打开，以便保留

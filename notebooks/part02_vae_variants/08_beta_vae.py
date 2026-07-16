@@ -64,43 +64,48 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–6. 数学暂停站：加权多目标")
-    derivation_map(["标准 negative ELBO", "给 KL 乘 beta", "beta 改变梯度比例", "posterior 容量改变", "观察重构—规整折中"])
-    mo.md(r"""
-    对参数 \(\theta,\phi\)：
+    mo.vstack(
+        [
+            mo.md("## 3–6. 数学暂停站：加权多目标"),
+            derivation_map(["标准 negative ELBO", "给 KL 乘 beta", "beta 改变梯度比例", "posterior 容量改变", "观察重构—规整折中"]),
+            mo.md(r"""
+            对参数 \(\theta,\phi\)：
 
-    \[
-    \nabla L_\beta=\nabla L_{\rm recon}+\beta\nabla L_{\rm KL}.
-    \]
+            \[
+            \nabla L_\beta=\nabla L_{\rm recon}+\beta\nabla L_{\rm KL}.
+            \]
 
-    因此 beta 不只改变数值，还改变更新方向。定义域检查：\(\beta\ge0\)；
-    reconstruction 与 KL 均为 batch 标量，reduction 必须一致。若一个按像素求和、
-    另一个按所有元素平均，beta 的含义会随图像大小改变。
+            因此 beta 不只改变数值，还改变更新方向。定义域检查：\(\beta\ge0\)；
+            reconstruction 与 KL 均为 batch 标量，reduction 必须一致。若一个按像素求和、
+            另一个按所有元素平均，beta 的含义会随图像大小改变。
 
-    ### 从约束问题得到 beta
+            ### 从约束问题得到 beta
 
-    假设我们真正想解决的是：
+            假设我们真正想解决的是：
 
-    \[
-    \min_{\theta,\phi}R(\theta,\phi)
-    \quad\text{subject to}\quad
-    K(\phi)\le C,
-    \]
+            \[
+            \min_{\theta,\phi}R(\theta,\phi)
+            \quad\text{subject to}\quad
+            K(\phi)\le C,
+            \]
 
-    其中 \(R\) 是 reconstruction loss，\(K\) 是平均 KL，\(C\) 是允许的
-    信息容量上限。引入非负 Lagrange multiplier \(\lambda\)：
+            其中 \(R\) 是 reconstruction loss，\(K\) 是平均 KL，\(C\) 是允许的
+            信息容量上限。引入非负 Lagrange multiplier \(\lambda\)：
 
-    \[
-    \mathcal J=R+\lambda(K-C)
-    =R+\lambda K-\lambda C.
-    \]
+            \[
+            \mathcal J=R+\lambda(K-C)
+            =R+\lambda K-\lambda C.
+            \]
 
-    对固定的 \(\lambda,C\)，最后一项与模型参数无关，所以优化模型参数时可省略，
-    得到 \(R+\lambda K\)。这解释了 beta 为什么像“违反容量约束的价格”。
+            对固定的 \(\lambda,C\)，最后一项与模型参数无关，所以优化模型参数时可省略，
+            得到 \(R+\lambda K\)。这解释了 beta 为什么像“违反容量约束的价格”。
 
-    但真实神经网络优化是非凸的，不同 beta 不一定与某个唯一容量 C 一一对应；
-    这个推导提供解释框架，不是 disentanglement 保证。
-    """)
+            但真实神经网络优化是非凸的，不同 beta 不一定与某个唯一容量 C 一一对应；
+            这个推导提供解释框架，不是 disentanglement 保证。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -166,12 +171,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("beta 控制什么？", "它控制 KL 梯度相对 reconstruction 梯度的权重，从而改变信息保存与 prior 规整的折中。"),
-        ("recon=30、KL=2，beta=4 时 total 是多少？", "30+4×2=38。"),
-        ("如何记录一次 beta 消融？", "固定数据、seed、架构和 reduction，分别记录 total、recon、KL、重构与 prior 采样。"),
-        ("拖动 beta，观察 toy total 最小点如何移动。", "beta 增大时最优容量向更小方向移动；真实模型还受容量和优化影响。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("beta 控制什么？", "它控制 KL 梯度相对 reconstruction 梯度的权重，从而改变信息保存与 prior 规整的折中。"),
+                ("recon=30、KL=2，beta=4 时 total 是多少？", "30+4×2=38。"),
+                ("如何记录一次 beta 消融？", "固定数据、seed、架构和 reduction，分别记录 total、recon、KL、重构与 prior 采样。"),
+                ("拖动 beta，观察 toy total 最小点如何移动。", "beta 增大时最优容量向更小方向移动；真实模型还受容量和优化影响。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

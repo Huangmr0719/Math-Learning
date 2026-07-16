@@ -45,8 +45,7 @@ def _():
 
 
 @app.cell
-def _(CHAPTERS, chapter_header, course_styles):
-    course_styles()
+def _(CHAPTERS, chapter_header):
     chapter_header(CHAPTERS[1], duration="60–90 分钟")
     return
 
@@ -113,15 +112,20 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–5. 即时数学与推导地图")
-    derivation_map(
+    mo.vstack(
         [
-            "把数据写成向量",
-            "计算每个坐标的误差",
-            "平方以避免正负抵消",
-            "对坐标取平均",
-            "对样本取平均",
-        ]
+            mo.md("## 3–5. 即时数学与推导地图"),
+            derivation_map(
+                [
+                    "把数据写成向量",
+                    "计算每个坐标的误差",
+                    "平方以避免正负抵消",
+                    "对坐标取平均",
+                    "对样本取平均",
+                ]
+            ),
+        ],
+        gap=0.8,
     )
     return
 
@@ -218,6 +222,7 @@ def _(COLORS, angle, mo, np, plt):
                 错误方向会让许多信息丢失。
                 """
             ),
+            angle,
             _fig,
         ]
     )
@@ -255,24 +260,29 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        (
-            "用自己的话解释 encoder、latent 和 decoder 各自做什么。",
-            "Encoder 压缩输入，latent 保存压缩表示，decoder 根据表示重建输入。关键是 latent 目前只是点，还不是具有明确采样规则的概率分布。",
-        ),
-        (
-            r"计算 \(x=(0,2)\)、\(\hat{x}=(1,4)\) 的 MSE。",
-            r"平方误差为 \((0-1)^2=1\)、\((2-4)^2=4\)，平均后为 \((1+4)/2=2.5\)。",
-        ),
-        (
-            "把代码中的 `mean()` 改成 `sum()`，结果的含义发生了什么变化？",
-            "它变成所有样本、所有坐标误差的总和，数值会随 batch size 和输入维度增长；比较不同实验时必须统一 reduction。",
-        ),
-        (
-            "拖动角度，先预测哪个方向 MSE 最小，再用图验证。记录预测与结果是否一致。",
-            "数据大致沿右上方向排列，所以约 30°–40° 的轴较好。探索题重在先预测，再根据误差线和 MSE 修正判断。",
-        ),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                (
+                    "用自己的话解释 encoder、latent 和 decoder 各自做什么。",
+                    "Encoder 压缩输入，latent 保存压缩表示，decoder 根据表示重建输入。关键是 latent 目前只是点，还不是具有明确采样规则的概率分布。",
+                ),
+                (
+                    r"计算 \(x=(0,2)\)、\(\hat{x}=(1,4)\) 的 MSE。",
+                    r"平方误差为 \((0-1)^2=1\)、\((2-4)^2=4\)，平均后为 \((1+4)/2=2.5\)。",
+                ),
+                (
+                    "把代码中的 `mean()` 改成 `sum()`，结果的含义发生了什么变化？",
+                    "它变成所有样本、所有坐标误差的总和，数值会随 batch size 和输入维度增长；比较不同实验时必须统一 reduction。",
+                ),
+                (
+                    "拖动角度，先预测哪个方向 MSE 最小，再用图验证。记录预测与结果是否一致。",
+                    "数据大致沿右上方向排列，所以约 30°–40° 的轴较好。探索题重在先预测，再根据误差线和 MSE 修正判断。",
+                ),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

@@ -67,23 +67,28 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map,mo):
-    mo.md("## 3–6. Conditional score 差与线性外推")
-    derivation_map(["训练时随机置空条件","得到 unconditional prediction","得到 conditional prediction","计算条件差向量","乘 guidance scale","进入 sampler"])
-    mo.md(r"""
-    由 Bayes score 恒等式：
-    \[
-    \nabla_x\log p(x|c)=\nabla_x\log p(x)+\nabla_x\log p(c|x).
-    \]
-    推导只需从
-    \[
-    \log p(x|c)=\log p(x)+\log p(c|x)-\log p(c)
-    \]
-    开始，对 \(x\) 求梯度。因为 \(p(c)\) 与 \(x\) 无关，
-    \(\nabla_x\log p(c)=0\)，所以常数项消失。
+    mo.vstack(
+        [
+            mo.md("## 3–6. Conditional score 差与线性外推"),
+            derivation_map(["训练时随机置空条件","得到 unconditional prediction","得到 conditional prediction","计算条件差向量","乘 guidance scale","进入 sampler"]),
+            mo.md(r"""
+            由 Bayes score 恒等式：
+            \[
+            \nabla_x\log p(x|c)=\nabla_x\log p(x)+\nabla_x\log p(c|x).
+            \]
+            推导只需从
+            \[
+            \log p(x|c)=\log p(x)+\log p(c|x)-\log p(c)
+            \]
+            开始，对 \(x\) 求梯度。因为 \(p(c)\) 与 \(x\) 无关，
+            \(\nabla_x\log p(c)=0\)，所以常数项消失。
 
-    conditional 与 unconditional score 的差近似提供“条件分类”方向，因此无需单独分类器。
-    公式可用于 epsilon、v 或 score，但必须在同一参数化空间做线性组合。
-    """)
+            conditional 与 unconditional score 的差近似提供“条件分类”方向，因此无需单独分类器。
+            公式可用于 epsilon、v 或 score，但必须在同一参数化空间做线性组合。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -142,12 +147,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block,mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("CFG 放大哪个方向？","conditional prediction 减 unconditional prediction 的差方向。"),
-        ("u=2、c=3、w=4，guided？","2+4×(3-2)=6。"),
-        ("为什么训练要丢条件？","让同一网络学到可用于 CFG 的 unconditional prediction。"),
-        ("增大 scale，观察 toy alignment/diversity。","一致性提高但多样性下降，体现常见权衡而非严格定律。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("CFG 放大哪个方向？","conditional prediction 减 unconditional prediction 的差方向。"),
+                ("u=2、c=3、w=4，guided？","2+4×(3-2)=6。"),
+                ("为什么训练要丢条件？","让同一网络学到可用于 CFG 的 unconditional prediction。"),
+                ("增大 scale，观察 toy alignment/diversity。","一致性提高但多样性下降，体现常见权衡而非严格定律。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

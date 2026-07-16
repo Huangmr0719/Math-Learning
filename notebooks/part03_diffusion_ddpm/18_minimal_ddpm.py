@@ -129,17 +129,22 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–5. 最小 DDPM 完整数据流")
-    derivation_map(
+    mo.vstack(
         [
-            "采样干净 x0",
-            "随机采样时间 t",
-            "采样真实 epsilon",
-            "闭式构造 xt",
-            "网络预测 epsilon",
-            "MSE 更新参数",
-            "从 xT 倒序执行 reverse step",
-        ]
+            mo.md("## 3–5. 最小 DDPM 完整数据流"),
+            derivation_map(
+                [
+                    "采样干净 x0",
+                    "随机采样时间 t",
+                    "采样真实 epsilon",
+                    "闭式构造 xt",
+                    "网络预测 epsilon",
+                    "MSE 更新参数",
+                    "从 xT 倒序执行 reverse step",
+                ]
+            ),
+        ],
+        gap=0.8,
     )
     return
 
@@ -238,23 +243,66 @@ def _(
     diffusion_steps,
     mo,
     plt,
+    sample_eight_gaussians,
+    torch,
     train_ddpm_button,
     training_steps,
     trajectory_stage,
 ):
-    _controls = mo.hstack(
-        [training_steps, diffusion_steps, ddpm_seed, train_ddpm_button],
-        widths="equal",
+    _controls = mo.vstack(
+        [
+            mo.hstack(
+                [training_steps, diffusion_steps, ddpm_seed, train_ddpm_button],
+                widths="equal",
+            ),
+            trajectory_stage,
+        ],
+        gap=0.6,
     )
     if ddpm_result is None:
-        _view = mo.callout(
-            mo.md(
-                """
-                训练尚未执行。请先读完公式和核心代码，再点击按钮。
-                打开或导出 notebook 不会自动进行长时间计算。
-                """
-            ),
-            kind="warn",
+        _preview_data = sample_eight_gaussians(
+            512, seed=int(ddpm_seed.value)
+        ).numpy()
+        _generator = torch.Generator().manual_seed(int(ddpm_seed.value))
+        _preview_noise = torch.randn(
+            (512, 2), generator=_generator
+        ).numpy()
+        _preview_fig, _preview_axes = plt.subplots(1, 2, figsize=(7.5, 3.2))
+        _preview_axes[0].scatter(
+            _preview_data[:, 0],
+            _preview_data[:, 1],
+            s=5,
+            alpha=0.4,
+            color=COLORS["data"],
+        )
+        _preview_axes[0].set_title(r"目标数据 $x_0$：八个模式")
+        _preview_axes[1].scatter(
+            _preview_noise[:, 0],
+            _preview_noise[:, 1],
+            s=5,
+            alpha=0.4,
+            color=COLORS["prior"],
+        )
+        _preview_axes[1].set_title(r"起点 $x_T$：Gaussian noise")
+        for _axis in _preview_axes:
+            _axis.set_xlim(-3.5, 3.5)
+            _axis.set_ylim(-3.5, 3.5)
+            _axis.set_aspect("equal")
+        _preview_fig.tight_layout()
+        _view = mo.vstack(
+            [
+                mo.callout(
+                    mo.md(
+                        """
+                        训练尚未执行。先比较目标分布与 Gaussian 起点，再阅读公式和核心代码。
+                        点击按钮后才会训练；打开或导出 notebook 不会自动执行长时间计算。
+                        """
+                    ),
+                    kind="warn",
+                ),
+                _preview_fig,
+            ],
+            gap=0.6,
         )
     else:
         _keys = sorted(ddpm_result.trajectory, reverse=True)
@@ -314,7 +362,6 @@ def _(
                     快速模式只要求看见趋势，不保证每个团都达到论文级质量。
                     """
                 ),
-                trajectory_stage,
                 _fig,
             ]
         )
@@ -466,24 +513,29 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        (
-            "从 x0 到 loss，用一句话串起训练链路。",
-            "随机抽 t 与 epsilon，由闭式公式构造 xt，网络根据 xt 和 t 预测 epsilon，再用 MSE 更新参数。",
-        ),
-        (
-            "若 batch=128、每个样本二维，predicted_noise 应是什么 shape？",
-            "`[128, 2]`；它必须与真实 epsilon 完全一致，才能逐元素计算误差。",
-        ),
-        (
-            "为什么 reverse sampling 的 `if t > 0` 不能删除？",
-            "t=0 时理论 posterior variance 为 0；继续注入噪声会破坏最终生成结果。",
-        ),
-        (
-            "比较 300 与 1200 updates，并观察 loss 和八团结构。哪些变化才算真正改进？",
-            "不仅看 loss 更低，还要看粒子从噪声形成多个清晰模式、覆盖八个团且不过度集中；随机实验需固定 seed 公平比较。",
-        ),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                (
+                    "从 x0 到 loss，用一句话串起训练链路。",
+                    "随机抽 t 与 epsilon，由闭式公式构造 xt，网络根据 xt 和 t 预测 epsilon，再用 MSE 更新参数。",
+                ),
+                (
+                    "若 batch=128、每个样本二维，predicted_noise 应是什么 shape？",
+                    "`[128, 2]`；它必须与真实 epsilon 完全一致，才能逐元素计算误差。",
+                ),
+                (
+                    "为什么 reverse sampling 的 `if t > 0` 不能删除？",
+                    "t=0 时理论 posterior variance 为 0；继续注入噪声会破坏最终生成结果。",
+                ),
+                (
+                    "比较 300 与 1200 updates，并观察 loss 和八团结构。哪些变化才算真正改进？",
+                    "不仅看 loss 更低，还要看粒子从噪声形成多个清晰模式、覆盖八个团且不过度集中；随机实验需固定 seed 公平比较。",
+                ),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

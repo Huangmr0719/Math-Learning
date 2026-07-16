@@ -38,8 +38,7 @@ def _():
 
 
 @app.cell
-def _(CHAPTERS, chapter_header, course_styles):
-    course_styles()
+def _(CHAPTERS, chapter_header):
     chapter_header(CHAPTERS[5], duration="90–120 分钟")
     return
 
@@ -98,8 +97,13 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–5. ELBO 推导地图")
-    derivation_map(["从 posterior KL 出发", "展开对数比", "代入 Bayes rule", "把 log p(x) 移出期望", "整理成 log evidence = ELBO + gap"])
+    mo.vstack(
+        [
+            mo.md("## 3–5. ELBO 推导地图"),
+            derivation_map(["从 posterior KL 出发", "展开对数比", "代入 Bayes rule", "把 log p(x) 移出期望", "整理成 log evidence = ELBO + gap"]),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -245,12 +249,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("为什么 ELBO 是下界？", "因为 log p(x) 等于 ELBO 加上一个非负的 posterior KL，所以 ELBO 不可能超过 log p(x)。"),
-        ("若 log p(x)=-1.2，posterior KL=0.3，ELBO 是多少？", r"由恒等式得 ELBO \(=-1.2-0.3=-1.5\)。"),
-        ("训练代码为什么通常写 reconstruction_loss + kl_loss？", "代码执行最小化，因此使用负 ELBO；负的 expected log likelihood 成为 reconstruction loss，减 KL 变为加正 KL。"),
-        ("拖动 q，找出 ELBO 最大的位置，并与真实 posterior 比较。", "ELBO 在 q 等于真实 posterior 时达到 log evidence；滑块离开该位置时 posterior KL gap 增大。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("为什么 ELBO 是下界？", "因为 log p(x) 等于 ELBO 加上一个非负的 posterior KL，所以 ELBO 不可能超过 log p(x)。"),
+                ("若 log p(x)=-1.2，posterior KL=0.3，ELBO 是多少？", r"由恒等式得 ELBO \(=-1.2-0.3=-1.5\)。"),
+                ("训练代码为什么通常写 reconstruction_loss + kl_loss？", "代码执行最小化，因此使用负 ELBO；负的 expected log likelihood 成为 reconstruction loss，减 KL 变为加正 KL。"),
+                ("拖动 q，找出 ELBO 最大的位置，并与真实 posterior 比较。", "ELBO 在 q 等于真实 posterior 时达到 log evidence；滑块离开该位置时 posterior KL gap 增大。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

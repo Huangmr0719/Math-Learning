@@ -66,37 +66,42 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–6. 从 xt 分解到 DDIM 更新")
-    derivation_map(["网络预测 epsilon", "代数解出 x0_hat", "选择更早时刻 s", "按 alpha_bar_s 重组信号与噪声", "eta 控制新随机噪声"])
-    mo.md(r"""
-    常用
-    \[
-    \sigma_{t\to s}=\eta
-    \sqrt{\frac{1-\bar\alpha_s}{1-\bar\alpha_t}}
-    \sqrt{1-\frac{\bar\alpha_t}{\bar\alpha_s}}.
-    \]
-    定义域要求 \(s<t\)、\(\bar\alpha_s>\bar\alpha_t\)，且根号内非负。
-    跳步 schedule 必须严格递减；代码中常见 off-by-one 来自训练索引 0-based 与论文 1-based。
+    mo.vstack(
+        [
+            mo.md("## 3–6. 从 xt 分解到 DDIM 更新"),
+            derivation_map(["网络预测 epsilon", "代数解出 x0_hat", "选择更早时刻 s", "按 alpha_bar_s 重组信号与噪声", "eta 控制新随机噪声"]),
+            mo.md(r"""
+            常用
+            \[
+            \sigma_{t\to s}=\eta
+            \sqrt{\frac{1-\bar\alpha_s}{1-\bar\alpha_t}}
+            \sqrt{1-\frac{\bar\alpha_t}{\bar\alpha_s}}.
+            \]
+            定义域要求 \(s<t\)、\(\bar\alpha_s>\bar\alpha_t\)，且根号内非负。
+            跳步 schedule 必须严格递减；代码中常见 off-by-one 来自训练索引 0-based 与论文 1-based。
 
-    ### 更新式的三块分别负责什么？
+            ### 更新式的三块分别负责什么？
 
-    \[
-    x_s=
-    \underbrace{\sqrt{\bar\alpha_s}\hat x_0}_{\text{预测的干净信号}}
-    +
-    \underbrace{\sqrt{1-\bar\alpha_s-\sigma^2}\epsilon_\theta}_{\text{沿当前噪声方向}}
-    +
-    \underbrace{\sigma z}_{\text{新注入的随机性}}.
-    \]
+            \[
+            x_s=
+            \underbrace{\sqrt{\bar\alpha_s}\hat x_0}_{\text{预测的干净信号}}
+            +
+            \underbrace{\sqrt{1-\bar\alpha_s-\sigma^2}\epsilon_\theta}_{\text{沿当前噪声方向}}
+            +
+            \underbrace{\sigma z}_{\text{新注入的随机性}}.
+            \]
 
-    三个系数的平方构成目标时刻的方差预算。根号中的
-    \(1-\bar\alpha_s-\sigma^2\) 必须非负。eta=0 只删除第三项，
-    并不删除网络预测的 \(\epsilon_\theta\)；因此“确定性采样”仍然依赖噪声预测模型。
+            三个系数的平方构成目标时刻的方差预算。根号中的
+            \(1-\bar\alpha_s-\sigma^2\) 必须非负。eta=0 只删除第三项，
+            并不删除网络预测的 \(\epsilon_\theta\)；因此“确定性采样”仍然依赖噪声预测模型。
 
-    DDIM 的关键不是简单把 DDPM 方差手工设为 0，而是构造具有相同训练目标的
-    非 Markov forward family，再选择其 reverse process。这里给出的更新式是
-    该构造的采样结果，而非仅由 marginal 相同自动推出。
-    """)
+            DDIM 的关键不是简单把 DDPM 方差手工设为 0，而是构造具有相同训练目标的
+            非 Markov forward family，再选择其 reverse process。这里给出的更新式是
+            该构造的采样结果，而非仅由 marginal 相同自动推出。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -161,12 +166,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("eta=0 的确定性指什么？", "固定初始 xT、网络和时间表后不再注入新随机噪声，输出可复现。"),
-        ("alpha_bar_t=.25、xt=1、eps=.5，求 x0_hat。", r"\((1-\sqrt{.75}\times.5)/.5\approx1.134\)。"),
-        ("为什么 schedule 必须递减？", "采样要从高噪声时刻走向低噪声时刻。"),
-        ("同时减少 steps、增大 eta，观察路径。", "步长变大且随机扰动增强，轨迹更粗糙；真实质量需模型实验判断。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("eta=0 的确定性指什么？", "固定初始 xT、网络和时间表后不再注入新随机噪声，输出可复现。"),
+                ("alpha_bar_t=.25、xt=1、eps=.5，求 x0_hat。", r"\((1-\sqrt{.75}\times.5)/.5\approx1.134\)。"),
+                ("为什么 schedule 必须递减？", "采样要从高噪声时刻走向低噪声时刻。"),
+                ("同时减少 steps、增大 eta，观察路径。", "步长变大且随机扰动增强，轨迹更粗糙；真实质量需模型实验判断。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

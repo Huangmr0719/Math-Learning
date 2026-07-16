@@ -62,33 +62,38 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map,mo):
-    mo.md("## 3–6. 统一坐标系")
-    derivation_map(["选择简单 base noise","定义连接数据的中间结构","构造可训练局部目标","学习 decoder/score/velocity","数值或一次映射生成","用失败模式诊断"])
-    mo.md(r"""
-    | 维度 | VAE | DDPM/DDIM | Flow Matching |
-    |---|---|---|---|
-    | 中间对象 | latent z | noisy state xt | probability path xt |
-    | 学习对象 | encoder/decoder | noise/score | velocity |
-    | 典型训练 | ELBO | noise MSE | velocity MSE |
-    | 典型采样 | 一次 decoder | 多步 reverse | ODE solve |
-    | likelihood | ELBO 是 log-likelihood 下界 | DDPM 有 VLB；连续 score 模型可经 probability-flow ODE 估计 | 仅当作为 CNF 积分 divergence 时可估 |
-    | 常见失败 | collapse/blur | 慢、guidance artifacts | coupling/solver error |
+    mo.vstack(
+        [
+            mo.md("## 3–6. 统一坐标系"),
+            derivation_map(["选择简单 base noise","定义连接数据的中间结构","构造可训练局部目标","学习 decoder/score/velocity","数值或一次映射生成","用失败模式诊断"]),
+            mo.md(r"""
+            | 维度 | VAE | DDPM/DDIM | Flow Matching |
+            |---|---|---|---|
+            | 中间对象 | latent z | noisy state xt | probability path xt |
+            | 学习对象 | encoder/decoder | noise/score | velocity |
+            | 典型训练 | ELBO | noise MSE | velocity MSE |
+            | 典型采样 | 一次 decoder | 多步 reverse | ODE solve |
+            | likelihood | ELBO 是 log-likelihood 下界 | DDPM 有 VLB；连续 score 模型可经 probability-flow ODE 估计 | 仅当作为 CNF 积分 divergence 时可估 |
+            | 常见失败 | collapse/blur | 慢、guidance artifacts | coupling/solver error |
 
-    同一模型家族内部也有例外，因此表格是导航，不是定义。
+            同一模型家族内部也有例外，因此表格是导航，不是定义。
 
-    ### “可以估计 likelihood”到底意味着什么？
+            ### “可以估计 likelihood”到底意味着什么？
 
-    - **VAE：** 通常直接计算的是 ELBO，而不是精确的 \(\log p_\theta(x)\)。
-    - **DDPM：** 离散概率模型具有变分下界；这与“DDIM 使用确定性采样轨迹”
-      不是同一个 likelihood 结论。
-    - **Score SDE：** 若使用 probability flow ODE，并沿轨迹积分 divergence，
-      可以进行连续变量的 likelihood 计算。
-    - **Flow Matching：** velocity MSE 本身不会自动输出 density。只有当学习到的
-      向量场满足 CNF 所需正则条件，并额外积分
-      \(d\log p_t(x_t)/dt=-\nabla\cdot v_t(x_t)\) 时，才得到 likelihood。
+            - **VAE：** 通常直接计算的是 ELBO，而不是精确的 \(\log p_\theta(x)\)。
+            - **DDPM：** 离散概率模型具有变分下界；这与“DDIM 使用确定性采样轨迹”
+              不是同一个 likelihood 结论。
+            - **Score SDE：** 若使用 probability flow ODE，并沿轨迹积分 divergence，
+              可以进行连续变量的 likelihood 计算。
+            - **Flow Matching：** velocity MSE 本身不会自动输出 density。只有当学习到的
+              向量场满足 CNF 所需正则条件，并额外积分
+              \(d\log p_t(x_t)/dt=-\nabla\cdot v_t(x_t)\) 时，才得到 likelihood。
 
-    因此，“训练目标能计算”“能生成样本”“能评估归一化密度”是三个不同问题。
-    """)
+            因此，“训练目标能计算”“能生成样本”“能评估归一化密度”是三个不同问题。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -157,12 +162,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block,mo):
-    mo.md("## 11. 分层综合练习")
-    exercise_block(
-        ("三类模型共同做什么？","把简单随机源通过可学习概率结构转换为目标数据分布。"),
-        ("一次 VAE decoder 与 50 步 sampler，网络调用量大致差多少？","若各步一次网络调用，约 1 次对 50 次；实际模型大小仍不同。"),
-        ("给每类模型写一个最关键 shape 检查。","VAE 检查 mu/logvar；Diffusion 检查 xt/epsilon；Flow 检查 state/velocity 均同 shape。"),
-        ("为自己的研究写需求表再选择模型。","至少比较表示需求、条件控制、采样预算、likelihood、数据规模和失败诊断，不设唯一答案。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层综合练习"),
+            exercise_block(
+                ("三类模型共同做什么？","把简单随机源通过可学习概率结构转换为目标数据分布。"),
+                ("一次 VAE decoder 与 50 步 sampler，网络调用量大致差多少？","若各步一次网络调用，约 1 次对 50 次；实际模型大小仍不同。"),
+                ("给每类模型写一个最关键 shape 检查。","VAE 检查 mu/logvar；Diffusion 检查 xt/epsilon；Flow 检查 state/velocity 均同 shape。"),
+                ("为自己的研究写需求表再选择模型。","至少比较表示需求、条件控制、采样预算、likelihood、数据规模和失败诊断，不设唯一答案。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

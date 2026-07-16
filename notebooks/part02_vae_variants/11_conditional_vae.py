@@ -66,47 +66,52 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–6. 条件信息进入哪里")
-    derivation_map(["观测 x 与条件 y", "encoder 推断 z", "重参数化采样", "decoder 接收 z 与 y", "最大化 conditional ELBO"])
-    mo.md(r"""
-    One-hot y shape `[B,num_classes]`；与 x 或 hidden 沿 feature 轴拼接。
-    条件独立假设不是“x 与 y 无关”，而是具体概率图中声明：给定哪些父节点后，
-    某变量不再依赖其他变量。使用前必须画清模型，不可凭直觉删条件。
+    mo.vstack(
+        [
+            mo.md("## 3–6. 条件信息进入哪里"),
+            derivation_map(["观测 x 与条件 y", "encoder 推断 z", "重参数化采样", "decoder 接收 z 与 y", "最大化 conditional ELBO"]),
+            mo.md(r"""
+            One-hot y shape `[B,num_classes]`；与 x 或 hidden 沿 feature 轴拼接。
+            条件独立假设不是“x 与 y 无关”，而是具体概率图中声明：给定哪些父节点后，
+            某变量不再依赖其他变量。使用前必须画清模型，不可凭直觉删条件。
 
-    ### 条件 ELBO 从哪里来？
+            ### 条件 ELBO 从哪里来？
 
-    对固定的条件 y，从恒等式开始：
+            对固定的条件 y，从恒等式开始：
 
-    \[
-    \log p_\theta(x|y)
-    =
-    \log\int p_\theta(x,z|y)dz.
-    \]
+            \[
+            \log p_\theta(x|y)
+            =
+            \log\int p_\theta(x,z|y)dz.
+            \]
 
-    乘除可计算的 \(q_\phi(z|x,y)\)，再用 Jensen：
+            乘除可计算的 \(q_\phi(z|x,y)\)，再用 Jensen：
 
-    \[
-    \log p_\theta(x|y)
-    \ge
-    E_q\left[
-    \log\frac{p_\theta(x,z|y)}{q_\phi(z|x,y)}
-    \right].
-    \]
+            \[
+            \log p_\theta(x|y)
+            \ge
+            E_q\left[
+            \log\frac{p_\theta(x,z|y)}{q_\phi(z|x,y)}
+            \right].
+            \]
 
-    若概率图规定
-    \(p_\theta(x,z|y)=p_\theta(x|z,y)p(z|y)\)，便得到
+            若概率图规定
+            \(p_\theta(x,z|y)=p_\theta(x|z,y)p(z|y)\)，便得到
 
-    \[
-    E_q\log p_\theta(x|z,y)
-    -KL(q_\phi(z|x,y)\|p(z|y)).
-    \]
+            \[
+            E_q\log p_\theta(x|z,y)
+            -KL(q_\phi(z|x,y)\|p(z|y)).
+            \]
 
-    如果另行假设 \(Z\) 与 \(Y\) 在 prior 下独立，才可以把 \(p(z|y)\)
-    简化为 \(p(z)\)。这是模型选择，不是由“conditional VAE”四个字自动推出。
+            如果另行假设 \(Z\) 与 \(Y\) 在 prior 下独立，才可以把 \(p(z|y)\)
+            简化为 \(p(z)\)。这是模型选择，不是由“conditional VAE”四个字自动推出。
 
-    一个常见概率图是 \(Y\to X,\ Z\to X\)，并让 encoder 近似后验读取
-    \(X,Y\)。它表达“给定 z,y 后生成 x”，并不表达 x 与 y 无关。
-    """)
+            一个常见概率图是 \(Y\to X,\ Z\to X\)，并让 encoder 近似后验读取
+            \(X,Y\)。它表达“给定 z,y 后生成 x”，并不表达 x 与 y 无关。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -175,12 +180,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("y 与 z 分别承担什么角色？", "y 提供显式控制条件，z 表示在给定条件下仍未指定的变化。"),
-        ("B=32、C=10，one-hot y shape 是什么？", "`[32,10]`。"),
-        ("为什么 decoder 也需要 y？", "生成时只有 z 和目标条件，decoder 必须读取 y 才能改变输出类别。"),
-        ("固定 z 切换 y，再固定 y 移动 z。", "前者应主要改变条件类别，后者应展示类内变化；真实模型需实验验证。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("y 与 z 分别承担什么角色？", "y 提供显式控制条件，z 表示在给定条件下仍未指定的变化。"),
+                ("B=32、C=10，one-hot y shape 是什么？", "`[32,10]`。"),
+                ("为什么 decoder 也需要 y？", "生成时只有 z 和目标条件，decoder 必须读取 y 才能改变输出类别。"),
+                ("固定 z 切换 y，再固定 y 移动 z。", "前者应主要改变条件类别，后者应展示类内变化；真实模型需实验验证。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

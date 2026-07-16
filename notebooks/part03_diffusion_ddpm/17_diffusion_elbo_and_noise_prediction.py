@@ -120,17 +120,22 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–5. 从 Diffusion ELBO 到 epsilon MSE")
-    derivation_map(
+    mo.vstack(
         [
-            "展开 reverse joint probability",
-            "把 negative ELBO 分成逐步 KL",
-            "固定 reverse variance",
-            "Gaussian KL 化成 mean squared error",
-            "用 epsilon 参数化 reverse mean",
-            "得到加权 noise MSE",
-            "定义简化的 unweighted loss",
-        ]
+            mo.md("## 3–5. 从 Diffusion ELBO 到 epsilon MSE"),
+            derivation_map(
+                [
+                    "展开 reverse joint probability",
+                    "把 negative ELBO 分成逐步 KL",
+                    "固定 reverse variance",
+                    "Gaussian KL 化成 mean squared error",
+                    "用 epsilon 参数化 reverse mean",
+                    "得到加权 noise MSE",
+                    "定义简化的 unweighted loss",
+                ]
+            ),
+        ],
+        gap=0.8,
     )
     return
 
@@ -426,24 +431,29 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        (
-            "为什么噪声预测可以 self-supervised？",
-            "训练者自己采样 epsilon 并构造 xt，因此真实噪声标签天然已知，不需要人工标注。",
-        ),
-        (
-            r"若真实 epsilon=1.2、预测为 0.7，单元素 simple MSE 是多少？",
-            r"\((1.2-0.7)^2=0.25\)。",
-        ),
-        (
-            "删除 model 的时间输入会造成什么歧义？",
-            "模型无法区分轻噪声和重噪声状态，也不知道应采用哪一组 schedule 系数。",
-        ),
-        (
-            "拖动 t，观察 VLB 权重曲线相对 simple MSE 如何变化。",
-            "两条曲线在固定 t 下最小点相同，但尺度随 t 改变；跨时间训练时这会改变有限容量模型的关注重点。",
-        ),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                (
+                    "为什么噪声预测可以 self-supervised？",
+                    "训练者自己采样 epsilon 并构造 xt，因此真实噪声标签天然已知，不需要人工标注。",
+                ),
+                (
+                    r"若真实 epsilon=1.2、预测为 0.7，单元素 simple MSE 是多少？",
+                    r"\((1.2-0.7)^2=0.25\)。",
+                ),
+                (
+                    "删除 model 的时间输入会造成什么歧义？",
+                    "模型无法区分轻噪声和重噪声状态，也不知道应采用哪一组 schedule 系数。",
+                ),
+                (
+                    "拖动 t，观察 VLB 权重曲线相对 simple MSE 如何变化。",
+                    "两条曲线在固定 t 下最小点相同，但尺度随 t 改变；跨时间训练时这会改变有限容量模型的关注重点。",
+                ),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

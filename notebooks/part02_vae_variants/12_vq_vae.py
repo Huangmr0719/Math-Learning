@@ -62,40 +62,45 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–6. 最近邻、codebook 与 straight-through")
-    derivation_map(["encoder 得到 z_e", "计算到所有 e_k 的距离", "argmin 选择索引", "decoder 读取 z_q", "ST 传梯度", "更新 codebook 与 commitment"])
-    mo.md(r"""
-    常见目标：
-    \[
-    L=L_{\rm recon}
-    +\|\operatorname{sg}[z_e]-e\|^2
-    +\beta\|z_e-\operatorname{sg}[e]\|^2.
-    \]
-    `sg` 是 stop-gradient。第二项移动 codebook 去追 encoder；第三项要求 encoder
-    承诺靠近所选 code，避免输出任意漂移。距离矩阵 shape `[B,K]`，argmin 沿 K 轴。
+    mo.vstack(
+        [
+            mo.md("## 3–6. 最近邻、codebook 与 straight-through"),
+            derivation_map(["encoder 得到 z_e", "计算到所有 e_k 的距离", "argmin 选择索引", "decoder 读取 z_q", "ST 传梯度", "更新 codebook 与 commitment"]),
+            mo.md(r"""
+            常见目标：
+            \[
+            L=L_{\rm recon}
+            +\|\operatorname{sg}[z_e]-e\|^2
+            +\beta\|z_e-\operatorname{sg}[e]\|^2.
+            \]
+            `sg` 是 stop-gradient。第二项移动 codebook 去追 encoder；第三项要求 encoder
+            承诺靠近所选 code，避免输出任意漂移。距离矩阵 shape `[B,K]`，argmin 沿 K 轴。
 
-    ### 三条梯度路径分别去哪里？
+            ### 三条梯度路径分别去哪里？
 
-    设当前选中的 code 为 \(e\)：
+            设当前选中的 code 为 \(e\)：
 
-    - reconstruction loss 通过 straight-through 路径把 decoder 梯度近似传给
-      encoder；它不会把 `argmin` 变成可微函数。
-    - \(\|\operatorname{sg}[z_e]-e\|^2\) 中 \(z_e\) 被视为常数，
-      梯度只更新 codebook，使 e 靠近 encoder 输出。
-    - \(\beta\|z_e-\operatorname{sg}[e]\|^2\) 中 e 被视为常数，
-      梯度只更新 encoder，要求它靠近已选择的 code。
+            - reconstruction loss 通过 straight-through 路径把 decoder 梯度近似传给
+              encoder；它不会把 `argmin` 变成可微函数。
+            - \(\|\operatorname{sg}[z_e]-e\|^2\) 中 \(z_e\) 被视为常数，
+              梯度只更新 codebook，使 e 靠近 encoder 输出。
+            - \(\beta\|z_e-\operatorname{sg}[e]\|^2\) 中 e 被视为常数，
+              梯度只更新 encoder，要求它靠近已选择的 code。
 
-    对 straight-through 写法
+            对 straight-through 写法
 
-    \[
-    z_{\rm st}=z_e+\operatorname{sg}(z_q-z_e),
-    \]
+            \[
+            z_{\rm st}=z_e+\operatorname{sg}(z_q-z_e),
+            \]
 
-    forward 数值为 \(z_q\)，因为两项相加后 \(z_e\) 抵消；
-    backward 时 detach 项导数为 0，所以
-    \(\partial z_{\rm st}/\partial z_e\approx I\)。
-    这个梯度与真实离散量化函数的导数不同，因此是有偏 surrogate gradient。
-    """)
+            forward 数值为 \(z_q\)，因为两项相加后 \(z_e\) 抵消；
+            backward 时 detach 项导数为 0，所以
+            \(\partial z_{\rm st}/\partial z_e\approx I\)。
+            这个梯度与真实离散量化函数的导数不同，因此是有偏 surrogate gradient。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -161,12 +166,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("为什么 VQ latent 是离散的？", "虽然每个 code 是连续向量，但可选择的索引只有有限 K 个。"),
-        ("B=16、K=512、D=64，distance shape？", "`[16,512]`。"),
-        ("`z_e + (z_q-z_e).detach()` forward 等于什么？", "数值上等于 z_q；梯度路径近似通过 z_e。"),
-        ("移动 z_e 穿过边界，观察索引。", "索引突然跳变说明量化映射不连续，也解释了普通梯度困难。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("为什么 VQ latent 是离散的？", "虽然每个 code 是连续向量，但可选择的索引只有有限 K 个。"),
+                ("B=16、K=512、D=64，distance shape？", "`[16,512]`。"),
+                ("`z_e + (z_q-z_e).detach()` forward 等于什么？", "数值上等于 z_q；梯度路径近似通过 z_e。"),
+                ("移动 z_e 穿过边界，观察索引。", "索引突然跳变说明量化映射不连续，也解释了普通梯度困难。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

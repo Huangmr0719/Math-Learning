@@ -59,32 +59,37 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map,mo):
-    mo.md("## 3–6. 压缩率与感知失真")
-    derivation_map(["图像编码为 z0","在 z 上训练 forward/noise prediction","从 Gaussian 采样 zT","latent reverse sampling","decoder 还原图像"])
-    mo.md(r"""
-    压缩率不是只有文件大小：
-    \[
-    r=\frac{C_zH_zW_z}{C_xH_xW_x}.
-    \]
-    Pixel MSE 小不一定感知相似；感知损失比较预训练特征，但也不是人类评价的严格替代。
-    shape 必须区分像素 `[B,3,H,W]` 与 latent `[B,C_z,H/f,W/f]`。
+    mo.vstack(
+        [
+            mo.md("## 3–6. 压缩率与感知失真"),
+            derivation_map(["图像编码为 z0","在 z 上训练 forward/noise prediction","从 Gaussian 采样 zT","latent reverse sampling","decoder 还原图像"]),
+            mo.md(r"""
+            压缩率不是只有文件大小：
+            \[
+            r=\frac{C_zH_zW_z}{C_xH_xW_x}.
+            \]
+            Pixel MSE 小不一定感知相似；感知损失比较预训练特征，但也不是人类评价的严格替代。
+            shape 必须区分像素 `[B,3,H,W]` 与 latent `[B,C_z,H/f,W/f]`。
 
-    若 \(H,W\) 都缩小 f 倍，空间位置数从 \(HW\) 变成 \(HW/f^2\)。
-    但总体计算并不严格只缩小 \(f^2\)：latent channels、网络宽度、
-    attention 的 \(N^2\) 成本和 decoder 计算都要计入。
+            若 \(H,W\) 都缩小 f 倍，空间位置数从 \(HW\) 变成 \(HW/f^2\)。
+            但总体计算并不严格只缩小 \(f^2\)：latent channels、网络宽度、
+            attention 的 \(N^2\) 成本和 decoder 计算都要计入。
 
-    Latent Diffusion 的总误差至少有两层：
+            Latent Diffusion 的总误差至少有两层：
 
-    \[
-    x\xrightarrow{E}z_0
-    \xrightarrow{\text{diffusion sampling}}\hat z_0
-    \xrightarrow{D}\hat x.
-    \]
+            \[
+            x\xrightarrow{E}z_0
+            \xrightarrow{\text{diffusion sampling}}\hat z_0
+            \xrightarrow{D}\hat x.
+            \]
 
-    即使 \(\hat z_0=z_0\)，仍可能有 autoencoder distortion
-    \(D(E(x))\ne x\)；即使 autoencoder 很好，diffusion 也可能产生
-    \(\hat z_0\ne z_0\)。诊断时必须分别做“纯重构”和“完整生成”实验。
-    """)
+            即使 \(\hat z_0=z_0\)，仍可能有 autoencoder distortion
+            \(D(E(x))\ne x\)；即使 autoencoder 很好，diffusion 也可能产生
+            \(\hat z_0\ne z_0\)。诊断时必须分别做“纯重构”和“完整生成”实验。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -148,12 +153,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block,mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("Latent Diffusion 节省什么？","主要减少去噪网络处理的空间位置与张量规模。"),
-        ("f=8 时空间位置缩小多少倍？","每边缩小 8，位置数缩小 64 倍。"),
-        ("为何 decode 前除 latent_scale？","恢复 autoencoder 训练时预期的 latent 数值尺度。"),
-        ("调大 f 与 channels，观察标量比例。","f 二次降低空间量，channels 线性增加容量。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("Latent Diffusion 节省什么？","主要减少去噪网络处理的空间位置与张量规模。"),
+                ("f=8 时空间位置缩小多少倍？","每边缩小 8，位置数缩小 64 倍。"),
+                ("为何 decode 前除 latent_scale？","恢复 autoencoder 训练时预期的 latent 数值尺度。"),
+                ("调大 f 与 channels，观察标量比例。","f 二次降低空间量，channels 线性增加容量。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

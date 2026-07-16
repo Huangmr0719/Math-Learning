@@ -71,17 +71,22 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–6. Change of variables")
-    derivation_map(["小区间概率守恒", "新旧区间长度由导数相连", "一维得到除以 |f'|", "多维用 Jacobian determinant", "多个 flow 的 log-det 相加"])
-    mo.md(r"""
-    一维小区间：
-    \[
-    p_U(u)\,du=p_Z(z)\,dz,\quad dz=f'(u)du
-    \Rightarrow p_Z(z)=p_U(u)/|f'(u)|.
-    \]
-    多维 determinant 描述局部体积缩放。shape 检查：单样本 Jacobian `[D,D]`，
-    determinant 是标量；batch 时每个样本各有一个 log-det。
-    """)
+    mo.vstack(
+        [
+            mo.md("## 3–6. Change of variables"),
+            derivation_map(["小区间概率守恒", "新旧区间长度由导数相连", "一维得到除以 |f'|", "多维用 Jacobian determinant", "多个 flow 的 log-det 相加"]),
+            mo.md(r"""
+            一维小区间：
+            \[
+            p_U(u)\,du=p_Z(z)\,dz,\quad dz=f'(u)du
+            \Rightarrow p_Z(z)=p_U(u)/|f'(u)|.
+            \]
+            多维 determinant 描述局部体积缩放。shape 检查：单样本 Jacobian `[D,D]`，
+            determinant 是标量；batch 时每个样本各有一个 log-det。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -146,12 +151,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("为什么拉伸区域密度下降？", "同一概率质量分布到更大体积，单位体积的概率密度必须下降。"),
-        ("若 z=3u，p_z 与 p_u 的关系？", r"\(p_Z(z)=p_U(z/3)/3\)。"),
-        ("log-det 为什么是减号？", "forward 体积放大多少，目标密度就要除以多少，取 log 后成为减法。"),
-        ("将 a 调到接近 -1，观察导数。", "中心处导数接近 0，密度尖锐且数值不稳定，说明可逆性边界。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("为什么拉伸区域密度下降？", "同一概率质量分布到更大体积，单位体积的概率密度必须下降。"),
+                ("若 z=3u，p_z 与 p_u 的关系？", r"\(p_Z(z)=p_U(z/3)/3\)。"),
+                ("log-det 为什么是减号？", "forward 体积放大多少，目标密度就要除以多少，取 log 后成为减法。"),
+                ("将 a 调到接近 -1，观察导数。", "中心处导数接近 0，密度尖锐且数值不稳定，说明可逆性边界。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

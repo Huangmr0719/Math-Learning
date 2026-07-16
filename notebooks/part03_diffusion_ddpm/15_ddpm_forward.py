@@ -113,16 +113,21 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–5. 两步展开，再推广到任意 t")
-    derivation_map(
+    mo.vstack(
         [
-            "写出 x1",
-            "把 x1 代入 x2",
-            "合并 x0 的系数",
-            "合并独立 Gaussian 噪声方差",
-            "识别累计乘积 alpha_bar_t",
-            "得到一步闭式采样",
-        ]
+            mo.md("## 3–5. 两步展开，再推广到任意 t"),
+            derivation_map(
+                [
+                    "写出 x1",
+                    "把 x1 代入 x2",
+                    "合并 x0 的系数",
+                    "合并独立 Gaussian 噪声方差",
+                    "识别累计乘积 alpha_bar_t",
+                    "得到一步闭式采样",
+                ]
+            ),
+        ],
+        gap=0.8,
     )
     return
 
@@ -329,24 +334,29 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        (
-            "alpha_t 与 alpha_bar_t 分别回答什么问题？",
-            "alpha_t 是单独第 t 步保留多少；alpha_bar_t 是从第 1 步到第 t 步累计保留多少。",
-        ),
-        (
-            r"若 \(\alpha_1=0.9,\alpha_2=0.8\)，求 \(\bar\alpha_2\) 与噪声方差。",
-            r"\(\bar\alpha_2=0.72\)，所以 \(q(x_2|x_0)\) 的噪声方差是 \(1-0.72=0.28\)。",
-        ),
-        (
-            "为什么 `gather` 后还需要 reshape？",
-            "gather 只得到每个样本的标量系数 `[B]`；reshape 明确让它沿 channel、height、width 广播。",
-        ),
-        (
-            "增大 beta_end 后，固定 t 的点云如何变化？先预测再拖动。",
-            "累计 alpha_bar 会下降得更快，因此同一个 t 保留更少数据结构、含有更多噪声。",
-        ),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                (
+                    "alpha_t 与 alpha_bar_t 分别回答什么问题？",
+                    "alpha_t 是单独第 t 步保留多少；alpha_bar_t 是从第 1 步到第 t 步累计保留多少。",
+                ),
+                (
+                    r"若 \(\alpha_1=0.9,\alpha_2=0.8\)，求 \(\bar\alpha_2\) 与噪声方差。",
+                    r"\(\bar\alpha_2=0.72\)，所以 \(q(x_2|x_0)\) 的噪声方差是 \(1-0.72=0.28\)。",
+                ),
+                (
+                    "为什么 `gather` 后还需要 reshape？",
+                    "gather 只得到每个样本的标量系数 `[B]`；reshape 明确让它沿 channel、height、width 广播。",
+                ),
+                (
+                    "增大 beta_end 后，固定 t 的点云如何变化？先预测再拖动。",
+                    "累计 alpha_bar 会下降得更快，因此同一个 t 保留更少数据结构、含有更多噪声。",
+                ),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

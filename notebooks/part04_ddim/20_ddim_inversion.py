@@ -60,29 +60,34 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–6. Invert → edit → denoise")
-    derivation_map(["真实 x0", "按确定性公式向高噪声推进", "保存 latent trajectory", "修改条件", "从某时刻倒序去噪", "比较重构与编辑"])
-    mo.md(r"""
-    一个简化确定性路径可写成
-    \[
-    x_t=\sqrt{\bar\alpha_t}\hat x_0+
-    \sqrt{1-\bar\alpha_t}\epsilon_\theta.
-    \]
-    从当前时刻 \(t\) 走向更高噪声时刻 \(s>t\)，教学版 inversion 使用
-    \[
-    \hat x_0^{(t)}
-    =\frac{x_t-\sqrt{1-\bar\alpha_t}\epsilon_\theta(x_t,t)}
-           {\sqrt{\bar\alpha_t}},
-    \]
-    \[
-    x_s=\sqrt{\bar\alpha_s}\hat x_0^{(t)}
-        +\sqrt{1-\bar\alpha_s}\epsilon_\theta(x_t,t).
-    \]
-    它假设从 \(t\) 到 \(s\) 的区间内，同一个噪声预测足以描述路径。
+    mo.vstack(
+        [
+            mo.md("## 3–6. Invert → edit → denoise"),
+            derivation_map(["真实 x0", "按确定性公式向高噪声推进", "保存 latent trajectory", "修改条件", "从某时刻倒序去噪", "比较重构与编辑"]),
+            mo.md(r"""
+            一个简化确定性路径可写成
+            \[
+            x_t=\sqrt{\bar\alpha_t}\hat x_0+
+            \sqrt{1-\bar\alpha_t}\epsilon_\theta.
+            \]
+            从当前时刻 \(t\) 走向更高噪声时刻 \(s>t\)，教学版 inversion 使用
+            \[
+            \hat x_0^{(t)}
+            =\frac{x_t-\sqrt{1-\bar\alpha_t}\epsilon_\theta(x_t,t)}
+                   {\sqrt{\bar\alpha_t}},
+            \]
+            \[
+            x_s=\sqrt{\bar\alpha_s}\hat x_0^{(t)}
+                +\sqrt{1-\bar\alpha_s}\epsilon_\theta(x_t,t).
+            \]
+            它假设从 \(t\) 到 \(s\) 的区间内，同一个噪声预测足以描述路径。
 
-    时间方向检查尤其重要：inversion 使用 alpha_bar 逐渐减小的索引；
-    generation 使用同一索引列表反转。误差应比较相同数据范围和同一 decoder 输出空间。
-    """)
+            时间方向检查尤其重要：inversion 使用 alpha_bar 逐渐减小的索引；
+            generation 使用同一索引列表反转。误差应比较相同数据范围和同一 decoder 输出空间。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -182,12 +187,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("inversion 的目的是什么？", "把真实样本定位到模型的 noisy trajectory，便于重构或在修改条件后编辑。"),
-        ("每步误差 0.01，能否断言 50 步总误差 0.5？", "不能；误差是向量并经过非线性传播，可能相消或放大。"),
-        ("为什么保存 trajectory？", "可从不同噪声强度编辑并逐步诊断重构偏差。"),
-        ("增加 steps 与 bias，分别观察误差。", "bias=0 时本 toy 路径应几乎精确闭环；bias 表示状态相关模型误差。增加 steps 会减小单步状态变化，但不会自动消除系统偏差。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("inversion 的目的是什么？", "把真实样本定位到模型的 noisy trajectory，便于重构或在修改条件后编辑。"),
+                ("每步误差 0.01，能否断言 50 步总误差 0.5？", "不能；误差是向量并经过非线性传播，可能相消或放大。"),
+                ("为什么保存 trajectory？", "可从不同噪声强度编辑并逐步诊断重构偏差。"),
+                ("增加 steps 与 bias，分别观察误差。", "bias=0 时本 toy 路径应几乎精确闭环；bias 表示状态相关模型误差。增加 steps 会减小单步状态变化，但不会自动消除系统偏差。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

@@ -65,21 +65,50 @@ def _(mo):
 
 
 @app.cell
-def _(CHAPTERS, PARTS, mo):
+def _(PARTS, mo):
+    part_filter = mo.ui.dropdown(
+        options={
+            "全部六个部分": "all",
+            **{title: key for key, title in PARTS.items()},
+        },
+        value="全部六个部分",
+        label="只查看某一部分",
+    )
+    completed_through = mo.ui.slider(
+        0,
+        30,
+        value=0,
+        step=1,
+        show_value=True,
+        label="我已经学完的最后一章",
+    )
+    return completed_through, part_filter
+
+
+@app.cell
+def _(CHAPTERS, PARTS, completed_through, mo, part_filter):
     _sections = []
     for _part_key, _part_title in PARTS.items():
+        if part_filter.value != "all" and _part_key != part_filter.value:
+            continue
         _rows = [
             {
                 "章节": f"{_spec.number:02d}",
                 "标题": _spec.title,
-                "状态": _spec.status,
-                "文件": f"{_spec.part}/{_spec.filename}",
+                "学习进度": (
+                    "已完成"
+                    if _spec.number <= completed_through.value
+                    else "下一章"
+                    if _spec.number == completed_through.value + 1
+                    else "未开始"
+                ),
+                "入口": f"[打开 notebook](./{_spec.part}/{_spec.filename})",
             }
             for _spec in CHAPTERS.values()
             if _spec.part == _part_key
         ]
         _table = "\n".join(
-            f"| {row['章节']} | {row['标题']} | {row['状态']} | `{row['文件']}` |"
+            f"| {row['章节']} | {row['标题']} | {row['学习进度']} | {row['入口']} |"
             for row in _rows
         )
         _sections.append(
@@ -87,13 +116,34 @@ def _(CHAPTERS, PARTS, mo):
                 f"""
                 ## {_part_title}
 
-                | 章节 | 标题 | 状态 | 文件 |
+                | 章节 | 标题 | 学习进度 | 入口 |
                 |---:|---|---|---|
                 {_table}
                 """
             )
         )
-    mo.vstack(_sections, gap=1.2)
+    if completed_through.value < 30:
+        _next_spec = CHAPTERS[completed_through.value + 1]
+        _next_message = f"建议下一步：**第 {_next_spec.number} 章 · {_next_spec.title}**。"
+    else:
+        _next_message = "你已经走完整条主线；建议返回第 30 章完成综合研究设计。"
+    mo.vstack(
+        [
+            mo.md(
+                f"""
+                ## 交互式课程地图
+
+                当前记录：已完成 **{completed_through.value}/30** 章。
+                {_next_message}
+
+                > 这里的进度控件用于规划当前学习会话，不会自动写入文件。
+                """
+            ),
+            mo.hstack([part_filter, completed_through], widths="equal"),
+            *_sections,
+        ],
+        gap=1.2,
+    )
     return
 
 

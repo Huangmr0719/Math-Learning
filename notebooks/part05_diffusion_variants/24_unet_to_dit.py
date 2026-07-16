@@ -60,25 +60,30 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map,mo):
-    mo.md("## 3–6. Patch embedding 与 self-attention")
-    derivation_map(["latent 切 patch","每个 patch 展平线性投影","加入位置/时间/条件","QK^T 得 attention","加权 V","投影回 patch 并重组"])
-    mo.md(r"""
-    \[
-    A=\operatorname{softmax}(QK^\top/\sqrt d),\qquad \mathrm{Attention}=AV.
-    \]
-    每个 token 通过三个线性映射得到：
+    mo.vstack(
+        [
+            mo.md("## 3–6. Patch embedding 与 self-attention"),
+            derivation_map(["latent 切 patch","每个 patch 展平线性投影","加入位置/时间/条件","QK^T 得 attention","加权 V","投影回 patch 并重组"]),
+            mo.md(r"""
+            \[
+            A=\operatorname{softmax}(QK^\top/\sqrt d),\qquad \mathrm{Attention}=AV.
+            \]
+            每个 token 通过三个线性映射得到：
 
-    - query \(Q\)：我正在寻找什么信息；
-    - key \(K\)：我能用什么特征被别人匹配；
-    - value \(V\)：匹配成功后实际传递什么内容。
+            - query \(Q\)：我正在寻找什么信息；
+            - key \(K\)：我能用什么特征被别人匹配；
+            - value \(V\)：匹配成功后实际传递什么内容。
 
-    若 `Q,K,V` shape 都是 `[B,heads,N,d]`，则 \(QK^\top\) 的 shape
-    是 `[B,heads,N,N]`。倒数第二个 N 选择 query，最后一个 N 枚举 keys。
-    因此 softmax 必须沿最后的 key 轴，每一行权重和为 1。
+            若 `Q,K,V` shape 都是 `[B,heads,N,d]`，则 \(QK^\top\) 的 shape
+            是 `[B,heads,N,N]`。倒数第二个 N 选择 query，最后一个 N 枚举 keys。
+            因此 softmax 必须沿最后的 key 轴，每一行权重和为 1。
 
-    假设 Q、K 各分量均值约为 0、方差约为 1，d 个乘积相加后的点积方差
-    约为 d；除以 \(\sqrt d\) 把标准差拉回常数量级，避免 softmax 过早饱和。
-    """)
+            假设 Q、K 各分量均值约为 0、方差约为 1，d 个乘积相加后的点积方差
+            约为 d；除以 \(\sqrt d\) 把标准差拉回常数量级，避免 softmax 过早饱和。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -148,12 +153,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block,mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("UNet 与 DiT 的核心差别？","UNet 主要用多尺度卷积，DiT 把图像表示为 token 并用 self-attention 交互。"),
-        ("64×64、P=8，N？","8×8=64 tokens。"),
-        ("为什么输出要 unpatchify？","扩散 sampler 需要与输入 xt 相同的空间张量 shape。"),
-        ("减小 patch，观察 N²。","token 数按 1/P² 增长，attention 矩阵按约 1/P⁴ 增长。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("UNet 与 DiT 的核心差别？","UNet 主要用多尺度卷积，DiT 把图像表示为 token 并用 self-attention 交互。"),
+                ("64×64、P=8，N？","8×8=64 tokens。"),
+                ("为什么输出要 unpatchify？","扩散 sampler 需要与输入 xt 相同的空间张量 shape。"),
+                ("减小 patch，观察 N²。","token 数按 1/P² 增长，attention 矩阵按约 1/P⁴ 增长。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

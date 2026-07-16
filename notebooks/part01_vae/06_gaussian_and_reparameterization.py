@@ -39,8 +39,7 @@ def _():
 
 
 @app.cell
-def _(CHAPTERS, chapter_header, course_styles):
-    course_styles()
+def _(CHAPTERS, chapter_header):
     chapter_header(CHAPTERS[6], duration="90–120 分钟")
     return
 
@@ -94,8 +93,13 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–5. Gaussian KL 与重参数化地图")
-    derivation_map(["encoder 输出 mu 与 logvar", "由 logvar 得到 std", "采样固定标准噪声 epsilon", "构造 z", "解析计算 KL(q||N(0,I))"])
+    mo.vstack(
+        [
+            mo.md("## 3–5. Gaussian KL 与重参数化地图"),
+            derivation_map(["encoder 输出 mu 与 logvar", "由 logvar 得到 std", "采样固定标准噪声 epsilon", "构造 z", "解析计算 KL(q||N(0,I))"]),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -258,12 +262,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("重参数化究竟把随机性从哪里移动到了哪里？", "从“直接由带参数分布采样 z”移动到固定标准分布 epsilon；mu 和 sigma 只参与普通可微变换。"),
-        (r"若 logvar=0，variance 和 std 分别是多少？", r"variance \(=e^0=1\)，std \(=e^{0/2}=1\)。"),
-        ("解释 `torch.sum(..., dim=-1).mean()` 的两个 reduction。", "先沿最后一个 latent 维度为每个样本求 KL，再沿 batch 对样本取平均，最终得到标量。"),
-        ("固定 logvar=0，改变 mu；再固定 mu=0，改变 logvar。比较两种偏离 prior 的方式。", "mu 偏离 0 会产生二次惩罚；logvar 偏离 0 表示方差偏离 1，两边都会增加 KL，但曲线并不对称。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("重参数化究竟把随机性从哪里移动到了哪里？", "从“直接由带参数分布采样 z”移动到固定标准分布 epsilon；mu 和 sigma 只参与普通可微变换。"),
+                (r"若 logvar=0，variance 和 std 分别是多少？", r"variance \(=e^0=1\)，std \(=e^{0/2}=1\)。"),
+                ("解释 `torch.sum(..., dim=-1).mean()` 的两个 reduction。", "先沿最后一个 latent 维度为每个样本求 KL，再沿 batch 对样本取平均，最终得到标量。"),
+                ("固定 logvar=0，改变 mu；再固定 mu=0，改变 logvar。比较两种偏离 prior 的方式。", "mu 偏离 0 会产生二次惩罚；logvar 偏离 0 表示方差偏离 1，两边都会增加 KL，但曲线并不对称。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

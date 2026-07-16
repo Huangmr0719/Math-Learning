@@ -36,8 +36,7 @@ def _():
 
 
 @app.cell
-def _(CHAPTERS, chapter_header, course_styles):
-    course_styles()
+def _(CHAPTERS, chapter_header):
     chapter_header(CHAPTERS[3], duration="60–90 分钟")
     return
 
@@ -92,8 +91,13 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–5. Bayes rule 推导地图")
-    derivation_map(["写出联合概率", "用两种顺序分解联合概率", "令两式相等", "除以 evidence p(x)", "得到 posterior"])
+    mo.vstack(
+        [
+            mo.md("## 3–5. Bayes rule 推导地图"),
+            derivation_map(["写出联合概率", "用两种顺序分解联合概率", "令两式相等", "除以 evidence p(x)", "得到 posterior"]),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -208,12 +212,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("用一句话区分 prior、likelihood 和 posterior。", "Prior 是看数据前对原因的看法；likelihood 是给定原因后证据出现的可能性；posterior 是看见证据后更新的原因概率。"),
-        ("若 p(A)=p(B)=0.5，p(R|A)=0.2，p(R|B)=0.8，求 p(B|R)。", r"\(p(R)=0.2\times0.5+0.8\times0.5=0.5\)，所以 \(p(B|R)=0.4/0.5=0.8\)。"),
-        ("代码中为什么必须先计算 evidence？", "它把所有 joint probability 归一化，使 posterior 总和为 1；也对应 Bayes rule 的分母 p(x)。"),
-        ("让 B 的 likelihood 很高但 prior 很低，观察 posterior。解释哪一个因素最终占主导。", "没有固定答案；posterior 由 prior 与 likelihood 的乘积共同决定，应比较两台机器的 joint weight，而不是单独看其中一个量。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("用一句话区分 prior、likelihood 和 posterior。", "Prior 是看数据前对原因的看法；likelihood 是给定原因后证据出现的可能性；posterior 是看见证据后更新的原因概率。"),
+                ("若 p(A)=p(B)=0.5，p(R|A)=0.2，p(R|B)=0.8，求 p(B|R)。", r"\(p(R)=0.2\times0.5+0.8\times0.5=0.5\)，所以 \(p(B|R)=0.4/0.5=0.8\)。"),
+                ("代码中为什么必须先计算 evidence？", "它把所有 joint probability 归一化，使 posterior 总和为 1；也对应 Bayes rule 的分母 p(x)。"),
+                ("让 B 的 likelihood 很高但 prior 很低，观察 posterior。解释哪一个因素最终占主导。", "没有固定答案；posterior 由 prior 与 likelihood 的乘积共同决定，应比较两台机器的 joint weight，而不是单独看其中一个量。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

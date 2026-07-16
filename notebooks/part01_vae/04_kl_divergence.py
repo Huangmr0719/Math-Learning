@@ -38,8 +38,7 @@ def _():
 
 
 @app.cell
-def _(CHAPTERS, chapter_header, course_styles):
-    course_styles()
+def _(CHAPTERS, chapter_header):
     chapter_header(CHAPTERS[4], duration="75–105 分钟")
     return
 
@@ -89,8 +88,13 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–5. 从单次惊讶到平均差异")
-    derivation_map(["比较同一事件的 p_i 与 q_i", "取对数比 log(p_i/q_i)", "按真实概率 p_i 加权", "对所有事件求和", "得到平均额外信息"])
+    mo.vstack(
+        [
+            mo.md("## 3–5. 从单次惊讶到平均差异"),
+            derivation_map(["比较同一事件的 p_i 与 q_i", "取对数比 log(p_i/q_i)", "按真实概率 p_i 加权", "对所有事件求和", "得到平均额外信息"]),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -241,12 +245,17 @@ def _(kl_discrete, mo, np):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("为什么 KL 不是普通几何距离？", "它通常不对称，而且不满足普通距离要求的对称性；方向决定由哪个分布提供期望权重。"),
-        (r"计算 \(p=(0.5,0.5),q=(0.25,0.75)\) 的 KL，保留公式即可。", r"\(0.5\log(0.5/0.25)+0.5\log(0.5/0.75)\)。使用自然对数时约为 0.1438。"),
-        ("为什么不能简单过滤 q=0 的位置？", "若该位置 p>0，真实世界可能发生而近似分布宣称绝不发生，对数比发散，KL 应为 +∞。"),
-        ("固定 p，移动 q。先预测 KL 最小点，再观察曲线是否支持预测。", "最小点应在 q=p；曲线提供数值支持，非负性的严格理由来自 Jensen inequality。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("为什么 KL 不是普通几何距离？", "它通常不对称，而且不满足普通距离要求的对称性；方向决定由哪个分布提供期望权重。"),
+                (r"计算 \(p=(0.5,0.5),q=(0.25,0.75)\) 的 KL，保留公式即可。", r"\(0.5\log(0.5/0.25)+0.5\log(0.5/0.75)\)。使用自然对数时约为 0.1438。"),
+                ("为什么不能简单过滤 q=0 的位置？", "若该位置 p>0，真实世界可能发生而近似分布宣称绝不发生，对数比发散，KL 应为 +∞。"),
+                ("固定 p，移动 q。先预测 KL 最小点，再观察曲线是否支持预测。", "最小点应在 q=p；曲线提供数值支持，非负性的严格理由来自 Jensen inequality。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

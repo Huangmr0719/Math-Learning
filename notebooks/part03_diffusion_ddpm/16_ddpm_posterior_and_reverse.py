@@ -111,16 +111,21 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–5. Gaussian conditioning 推导地图")
-    derivation_map(
+    mo.vstack(
         [
-            "写 Bayes 比例式",
-            "代入两个 Gaussian 指数",
-            "展开关于 x_{t-1} 的二次项",
-            "完成平方",
-            "读出 posterior mean",
-            "读出 posterior variance",
-        ]
+            mo.md("## 3–5. Gaussian conditioning 推导地图"),
+            derivation_map(
+                [
+                    "写 Bayes 比例式",
+                    "代入两个 Gaussian 指数",
+                    "展开关于 x_{t-1} 的二次项",
+                    "完成平方",
+                    "读出 posterior mean",
+                    "读出 posterior variance",
+                ]
+            ),
+        ],
+        gap=0.8,
     )
     return
 
@@ -420,24 +425,29 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        (
-            "posterior mean 为什么同时包含 x0 和 xt？",
-            "x0 提供整条链的起点信息，xt 提供当前观测信息；Bayes posterior 合并两者。",
-        ),
-        (
-            r"当 \(t=1\) 时，为什么 \(\tilde\beta_1=0\)？",
-            r"因为 \(\bar\alpha_0=1\)，分子包含 \(1-\bar\alpha_0=0\)。给定 x0 时，x0 本身没有不确定性。",
-        ),
-        (
-            "若 reverse loop 写成 `for t in range(T)`，逻辑错误是什么？",
-            "它从接近数据的一端继续走向噪声，而不是从 xT 逐步恢复 x0。",
-        ),
-        (
-            "移动 xt，观察 posterior mean。它是否简单等于 x0 与 xt 的算术平均？",
-            "不是。权重由 beta、alpha 和累计 alpha_bar 决定，并非固定各占一半。",
-        ),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                (
+                    "posterior mean 为什么同时包含 x0 和 xt？",
+                    "x0 提供整条链的起点信息，xt 提供当前观测信息；Bayes posterior 合并两者。",
+                ),
+                (
+                    r"当 \(t=1\) 时，为什么 \(\tilde\beta_1=0\)？",
+                    r"因为 \(\bar\alpha_0=1\)，分子包含 \(1-\bar\alpha_0=0\)。给定 x0 时，x0 本身没有不确定性。",
+                ),
+                (
+                    "若 reverse loop 写成 `for t in range(T)`，逻辑错误是什么？",
+                    "它从接近数据的一端继续走向噪声，而不是从 xT 逐步恢复 x0。",
+                ),
+                (
+                    "移动 xt，观察 posterior mean。它是否简单等于 x0 与 xt 的算术平均？",
+                    "不是。权重由 beta、alpha 和累计 alpha_bar 决定，并非固定各占一半。",
+                ),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

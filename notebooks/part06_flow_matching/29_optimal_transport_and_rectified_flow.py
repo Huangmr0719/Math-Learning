@@ -72,33 +72,38 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map,mo):
-    mo.md("## 3–6. Coupling、transport cost 与 reflow")
-    derivation_map(["固定 source/target marginals","选择联合 pairing","计算平方运输成本","寻找低成本 coupling","训练 velocity","用模型生成新 pairs","再次 rectification"])
-    mo.md(r"""
-    Rectified Flow 的 reflow 思想：先用已有模型把 source 样本映射到生成终点，
-    将这组更一致的 source–target pairing 作为新训练数据，再训练直线插值速度。
-    “直”通常指轨迹曲率/离散误差更低，不等于所有 velocity 在全空间常数。
+    mo.vstack(
+        [
+            mo.md("## 3–6. Coupling、transport cost 与 reflow"),
+            derivation_map(["固定 source/target marginals","选择联合 pairing","计算平方运输成本","寻找低成本 coupling","训练 velocity","用模型生成新 pairs","再次 rectification"]),
+            mo.md(r"""
+            Rectified Flow 的 reflow 思想：先用已有模型把 source 样本映射到生成终点，
+            将这组更一致的 source–target pairing 作为新训练数据，再训练直线插值速度。
+            “直”通常指轨迹曲率/离散误差更低，不等于所有 velocity 在全空间常数。
 
-    ### 数学暂停站：coupling 不等于 marginal
+            ### 数学暂停站：coupling 不等于 marginal
 
-    对离散变量，coupling 是一张联合概率表。表中第 \(i,j\) 格表示
-    “source 取第 \(i\) 个值，同时 target 取第 \(j\) 个值”的概率。
-    每一行求和得到 source marginal，每一列求和得到 target marginal。
+            对离散变量，coupling 是一张联合概率表。表中第 \(i,j\) 格表示
+            “source 取第 \(i\) 个值，同时 target 取第 \(j\) 个值”的概率。
+            每一行求和得到 source marginal，每一列求和得到 target marginal。
 
-    两张联合表可以具有完全相同的行和与列和，却把概率质量放在不同格子中。
-    因此 coupling 改变的是“谁和谁配对”，不是两端各自有哪些样本。
+            两张联合表可以具有完全相同的行和与列和，却把概率质量放在不同格子中。
+            因此 coupling 改变的是“谁和谁配对”，不是两端各自有哪些样本。
 
-    ### 四个容易混淆的对象
+            ### 四个容易混淆的对象
 
-    1. **Independent coupling**：独立抽取 source 与 target，是一种合法 coupling。
-    2. **OT coupling**：在合法 coupling 中最小化所选 transport cost。
-    3. **OT probability path**：用 OT coupling 做 displacement interpolation。
-    4. **Rectified Flow / reflow**：从给定 coupling 学 ODE，再用模型诱导的新
-       coupling 重新训练，使轨迹趋于更直。
+            1. **Independent coupling**：独立抽取 source 与 target，是一种合法 coupling。
+            2. **OT coupling**：在合法 coupling 中最小化所选 transport cost。
+            3. **OT probability path**：用 OT coupling 做 displacement interpolation。
+            4. **Rectified Flow / reflow**：从给定 coupling 学 ODE，再用模型诱导的新
+               coupling 重新训练，使轨迹趋于更直。
 
-    Rectified Flow 论文证明的是 rectification 使一类凸 transport costs
-    不增加；不能把它简写成“每次 reflow 都精确求出了 OT”。
-    """)
+            Rectified Flow 论文证明的是 rectification 使一类凸 transport costs
+            不增加；不能把它简写成“每次 reflow 都精确求出了 OT”。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -192,12 +197,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block,mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("coupling 改变边缘分布吗？","合法 coupling 必须保持指定的 source 和 target 边缘；它改变的是联合配对。若行和或列和改变，那张表就不再属于同一个 Π(p0,p1)。"),
-        ("source=[0,2]、target=[1,3]，排序成本均值？","((1-0)^2+(3-2)^2)/2=1。"),
-        ("cost matrix shape 为什么是 [B,B]？","每个 source 都要与 batch 中每个 target 计算候选成本。"),
-        ("切换 coupling，观察交叉与成本。","排序 pairing 通常减少一维交叉和平方成本。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("coupling 改变边缘分布吗？","合法 coupling 必须保持指定的 source 和 target 边缘；它改变的是联合配对。若行和或列和改变，那张表就不再属于同一个 Π(p0,p1)。"),
+                ("source=[0,2]、target=[1,3]，排序成本均值？","((1-0)^2+(3-2)^2)/2=1。"),
+                ("cost matrix shape 为什么是 [B,B]？","每个 source 都要与 batch 中每个 target 计算候选成本。"),
+                ("切换 coupling，观察交叉与成本。","排序 pairing 通常减少一维交叉和平方成本。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

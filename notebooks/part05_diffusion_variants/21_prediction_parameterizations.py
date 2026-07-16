@@ -65,32 +65,37 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map,mo):
-    mo.md("## 3–6. 参数化换算与 SNR")
-    derivation_map(["写 xt 混合式","定义 v","组成 2×2 旋转矩阵","转置求逆","得到 x0 与 epsilon","score 再做时间缩放"])
-    mo.md(r"""
-    \[
-    \mathrm{SNR}(t)=\alpha_t^2/\sigma_t^2,\qquad
-    score=-\epsilon/\sigma_t
-    \]
-    （这里是已知 \(x_0\) 时 \(q(x_t|x_0)\) 的 conditional Gaussian score）。
-    真正生成所需的 marginal score 是
-    \(\nabla_{x_t}\log p_t(x_t)\)；训练数据平均后，最优噪声预测与它建立联系，
-    不能把单个样本的真实 epsilon 直接称为 marginal score。
+    mo.vstack(
+        [
+            mo.md("## 3–6. 参数化换算与 SNR"),
+            derivation_map(["写 xt 混合式","定义 v","组成 2×2 旋转矩阵","转置求逆","得到 x0 与 epsilon","score 再做时间缩放"]),
+            mo.md(r"""
+            \[
+            \mathrm{SNR}(t)=\alpha_t^2/\sigma_t^2,\qquad
+            score=-\epsilon/\sigma_t
+            \]
+            （这里是已知 \(x_0\) 时 \(q(x_t|x_0)\) 的 conditional Gaussian score）。
+            真正生成所需的 marginal score 是
+            \(\nabla_{x_t}\log p_t(x_t)\)；训练数据平均后，最优噪声预测与它建立联系，
+            不能把单个样本的真实 epsilon 直接称为 marginal score。
 
-    SNR 是信号方差与噪声方差之比：
+            SNR 是信号方差与噪声方差之比：
 
-    - \(\mathrm{SNR}\gg1\)：接近干净端，信号占主导；
-    - \(\mathrm{SNR}\ll1\)：接近噪声端，噪声占主导；
-    - \(\log\mathrm{SNR}=2\log\alpha_t-2\log\sigma_t\) 把跨越许多数量级的
-      比值变成较易观察的加减尺度。
+            - \(\mathrm{SNR}\gg1\)：接近干净端，信号占主导；
+            - \(\mathrm{SNR}\ll1\)：接近噪声端，噪声占主导；
+            - \(\log\mathrm{SNR}=2\log\alpha_t-2\log\sigma_t\) 把跨越许多数量级的
+              比值变成较易观察的加减尺度。
 
-    当 \(\sigma_t\to0\) 时 score 换算含除零风险；
-    当 \(\alpha_t\to0\) 时从 epsilon 恢复 x0 会放大误差。参数化影响数值条件和 loss 权重。
+            当 \(\sigma_t\to0\) 时 score 换算含除零风险；
+            当 \(\alpha_t\to0\) 时从 epsilon 恢复 x0 会放大误差。参数化影响数值条件和 loss 权重。
 
-    上面的 2×2 矩阵只有在 \(\alpha_t^2+\sigma_t^2=1\) 的
-    variance-preserving 参数化下才是旋转矩阵；更一般噪声路径仍可线性换算，
-    但逆矩阵不一定等于转置。
-    """)
+            上面的 2×2 矩阵只有在 \(\alpha_t^2+\sigma_t^2=1\) 的
+            variance-preserving 参数化下才是旋转矩阵；更一般噪声路径仍可线性换算，
+            但逆矩阵不一定等于转置。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -143,12 +148,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block,mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("为什么称为不同参数化？","它们表达同一 noisy state 中的信号与噪声，但选择不同预测坐标和损失尺度。"),
-        ("alpha=.8、sigma=.6、xt=1、v=0，求 x0 与 epsilon。","x0=.8，epsilon=.6。"),
-        ("为什么 clamp sigma？","防止接近干净端时除以接近 0 导致数值爆炸。"),
-        ("拖动 angle，观察同一 xt、v 的换算。","时间改变坐标旋转角，因此同一数值预测对应不同 x0 与 epsilon。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("为什么称为不同参数化？","它们表达同一 noisy state 中的信号与噪声，但选择不同预测坐标和损失尺度。"),
+                ("alpha=.8、sigma=.6、xt=1、v=0，求 x0 与 epsilon。","x0=.8，epsilon=.6。"),
+                ("为什么 clamp sigma？","防止接近干净端时除以接近 0 导致数值爆炸。"),
+                ("拖动 angle，观察同一 xt、v 的换算。","时间改变坐标旋转角，因此同一数值预测对应不同 x0 与 epsilon。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

@@ -65,56 +65,61 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–6. 为什么空白 latent 是局部最优")
-    derivation_map(["decoder 很强", "早期 z 信息噪声大", "忽略 z 可先改善重构", "KL 同时下降", "encoder 梯度变弱", "形成 collapse"])
-    mo.md(r"""
-    常用干预：
+    mo.vstack(
+        [
+            mo.md("## 3–6. 为什么空白 latent 是局部最优"),
+            derivation_map(["decoder 很强", "早期 z 信息噪声大", "忽略 z 可先改善重构", "KL 同时下降", "encoder 梯度变弱", "形成 collapse"]),
+            mo.md(r"""
+            常用干预：
 
-    - KL annealing：训练早期令 \(\beta\) 小，逐渐升到 1；
-    - free bits：每个 latent group 的少量 KL 不惩罚；
-    - weakening decoder / skip connections：迫使 decoder 读取 z；
-    - 改善优化与 posterior 表达力。
+            - KL annealing：训练早期令 \(\beta\) 小，逐渐升到 1；
+            - free bits：每个 latent group 的少量 KL 不惩罚；
+            - weakening decoder / skip connections：迫使 decoder 读取 z；
+            - 改善优化与 posterior 表达力。
 
-    Free bits 的一种写法：
-    \[
-    L=L_{\rm recon}+\sum_j\max(\lambda,KL_j).
-    \]
-    不同论文实现记号不同，必须确认是“下限截断 loss”还是“超出容量才收费”。
+            Free bits 的一种写法：
+            \[
+            L=L_{\rm recon}+\sum_j\max(\lambda,KL_j).
+            \]
+            不同论文实现记号不同，必须确认是“下限截断 loss”还是“超出容量才收费”。
 
-    ### 数学暂停站：逐样本 KL 到底在惩罚什么？
+            ### 数学暂停站：逐样本 KL 到底在惩罚什么？
 
-    定义 aggregated posterior
+            定义 aggregated posterior
 
-    \[
-    q(z)=\mathbb E_{x\sim p_{\rm data}}q_\phi(z|x).
-    \]
+            \[
+            q(z)=\mathbb E_{x\sim p_{\rm data}}q_\phi(z|x).
+            \]
 
-    它表示先随机抽一条数据 \(x\)，再从 encoder 抽取 \(z\) 后，忽略 x 得到的
-    整体 latent 分布。平均 prior KL 可以严格分解为
+            它表示先随机抽一条数据 \(x\)，再从 encoder 抽取 \(z\) 后，忽略 x 得到的
+            整体 latent 分布。平均 prior KL 可以严格分解为
 
-    \[
-    \mathbb E_x KL(q(z|x)\|p(z))
-    =
-    I_q(X;Z)+KL(q(z)\|p(z)).
-    \]
+            \[
+            \mathbb E_x KL(q(z|x)\|p(z))
+            =
+            I_q(X;Z)+KL(q(z)\|p(z)).
+            \]
 
-    推导只需在对数比中乘除 \(q(z)\)：
+            推导只需在对数比中乘除 \(q(z)\)：
 
-    \[
-    \log\frac{q(z|x)}{p(z)}
-    =
-    \log\frac{q(z|x)}{q(z)}
-    +
-    \log\frac{q(z)}{p(z)}.
-    \]
+            \[
+            \log\frac{q(z|x)}{p(z)}
+            =
+            \log\frac{q(z|x)}{q(z)}
+            +
+            \log\frac{q(z)}{p(z)}.
+            \]
 
-    对联合分布 \(q(x,z)=p_{\rm data}(x)q(z|x)\) 取期望，第一项就是互信息
-    \(I_q(X;Z)\)，第二项化成 aggregated posterior 到 prior 的 KL。
+            对联合分布 \(q(x,z)=p_{\rm data}(x)q(z|x)\) 取期望，第一项就是互信息
+            \(I_q(X;Z)\)，第二项化成 aggregated posterior 到 prior 的 KL。
 
-    因此逐样本 KL 同时压低两件事：z 保存多少关于 x 的信息，以及整体 latent
-    分布离 prior 多远。Posterior collapse 对应第一项也接近 0，而不只是
-    “整体分布看起来像 prior”。
-    """)
+            因此逐样本 KL 同时压低两件事：z 保存多少关于 x 的信息，以及整体 latent
+            分布离 prior 多远。Posterior collapse 对应第一项也接近 0，而不只是
+            “整体分布看起来像 prior”。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -184,12 +189,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("用纸条类比解释 collapse。", "decoder 自己能完成任务且读取纸条要付 KL 成本，于是 encoder 发送与输入无关的信息。"),
-        ("8 个维度中只有 2 个 KL>0.01，active units 是多少？", "2。"),
-        ("为什么要记录 kl_per_dim？", "总 KL 会隐藏不同维度的使用差异，逐维日志能识别死亡维度。"),
-        ("调高 decoder strength 与 beta，预测最优信息量。", "两者通常都会把 toy 最优点推向 0。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("用纸条类比解释 collapse。", "decoder 自己能完成任务且读取纸条要付 KL 成本，于是 encoder 发送与输入无关的信息。"),
+                ("8 个维度中只有 2 个 KL>0.01，active units 是多少？", "2。"),
+                ("为什么要记录 kl_per_dim？", "总 KL 会隐藏不同维度的使用差异，逐维日志能识别死亡维度。"),
+                ("调高 decoder strength 与 beta，预测最优信息量。", "两者通常都会把 toy 最优点推向 0。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

@@ -70,45 +70,50 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map,mo):
-    mo.md("## 3–6. Conditional path 如何产生 marginal field")
-    derivation_map(["采样 source x0","采样 target x1","采样时间 t","构造 conditional xt","计算已知 conditional velocity","MSE 回归","条件期望得到 marginal velocity"])
-    mo.md(r"""
-    最简单线性插值：
-    \[
-    x_t=(1-t)x_0+tx_1,\qquad u_t=x_1-x_0.
-    \]
-    这里单条样本速度恒定，但模型看到的 \(v(x,t)\) 是给定位置后的条件平均。
-    shape：x0、x1、xt、u、prediction 均 `[B,D]`；t reshape 为 `[B,1]` 广播。
+    mo.vstack(
+        [
+            mo.md("## 3–6. Conditional path 如何产生 marginal field"),
+            derivation_map(["采样 source x0","采样 target x1","采样时间 t","构造 conditional xt","计算已知 conditional velocity","MSE 回归","条件期望得到 marginal velocity"]),
+            mo.md(r"""
+            最简单线性插值：
+            \[
+            x_t=(1-t)x_0+tx_1,\qquad u_t=x_1-x_0.
+            \]
+            这里单条样本速度恒定，但模型看到的 \(v(x,t)\) 是给定位置后的条件平均。
+            shape：x0、x1、xt、u、prediction 均 `[B,D]`；t reshape 为 `[B,1]` 广播。
 
-    ### 数学暂停站：为什么 MSE 会学到条件平均？
+            ### 数学暂停站：为什么 MSE 会学到条件平均？
 
-    先固定时间 \(t\) 和位置 \(X_t=x\)。令
-    \(\mu(x,t)=E[U_t\mid X_t=x]\)，模型在该位置输出任意候选值 \(a\)。
-    使用恒等式
+            先固定时间 \(t\) 和位置 \(X_t=x\)。令
+            \(\mu(x,t)=E[U_t\mid X_t=x]\)，模型在该位置输出任意候选值 \(a\)。
+            使用恒等式
 
-    \[
-    U_t-a=(U_t-\mu)+(\mu-a)
-    \]
+            \[
+            U_t-a=(U_t-\mu)+(\mu-a)
+            \]
 
-    展开平方并取条件期望：
+            展开平方并取条件期望：
 
-    \[
-    \begin{aligned}
-    E[(U_t-a)^2\mid X_t=x]
-    &=E[(U_t-\mu)^2\mid X_t=x]\\
-    &\quad+2(\mu-a)E[U_t-\mu\mid X_t=x]\\
-    &\quad+(\mu-a)^2\\
-    &=\operatorname{Var}(U_t\mid X_t=x)+(\mu-a)^2.
-    \end{aligned}
-    \]
+            \[
+            \begin{aligned}
+            E[(U_t-a)^2\mid X_t=x]
+            &=E[(U_t-\mu)^2\mid X_t=x]\\
+            &\quad+2(\mu-a)E[U_t-\mu\mid X_t=x]\\
+            &\quad+(\mu-a)^2\\
+            &=\operatorname{Var}(U_t\mid X_t=x)+(\mu-a)^2.
+            \end{aligned}
+            \]
 
-    中间交叉项为 0，因为条件平均的定义给出
-    \(E[U_t-\mu\mid X_t=x]=0\)。第一项与预测 \(a\) 无关，第二项只在
-    \(a=\mu\) 时达到最小值 0。因此 MSE 的最优预测就是条件期望。
+            中间交叉项为 0，因为条件平均的定义给出
+            \(E[U_t-\mu\mid X_t=x]=0\)。第一项与预测 \(a\) 无关，第二项只在
+            \(a=\mu\) 时达到最小值 0。因此 MSE 的最优预测就是条件期望。
 
-    向量情形把平方换成 \(\|U_t-a\|^2\)，结论相同；要求
-    \(E[\|U_t\|^2]<\infty\)，否则 MSE 本身可能没有有限值。
-    """)
+            向量情形把平方换成 \(\|U_t-a\|^2\)，结论相同；要求
+            \(E[\|U_t\|^2]<\infty\)，否则 MSE 本身可能没有有限值。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -207,12 +212,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block,mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("为什么最优模型是条件平均速度？","固定 xt,t 后，期望平方误差可分解为不可约条件方差，加上预测与条件平均之差的平方；后者在预测等于条件平均时为 0。"),
-        ("x0=-2、x1=3、t=.4，xt 和速度？","xt=0，速度=5。"),
-        ("t 为什么 reshape 为 [B,1]？","让每个样本的标量时间沿 D 个 feature 广播。"),
-        ("改变 pair 与 t，比较位置和速度。","线性 path 中位置随 t 变，单对样本速度保持不变。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("为什么最优模型是条件平均速度？","固定 xt,t 后，期望平方误差可分解为不可约条件方差，加上预测与条件平均之差的平方；后者在预测等于条件平均时为 0。"),
+                ("x0=-2、x1=3、t=.4，xt 和速度？","xt=0，速度=5。"),
+                ("t 为什么 reshape 为 [B,1]？","让每个样本的标量时间沿 D 个 feature 广播。"),
+                ("改变 pair 与 t，比较位置和速度。","线性 path 中位置随 t 变，单对样本速度保持不变。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

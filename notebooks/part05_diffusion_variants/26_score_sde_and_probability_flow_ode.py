@@ -70,25 +70,30 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map,mo):
-    mo.md("## 3–6. ODE、SDE 与密度演化")
-    derivation_map(["离散 Gaussian 增量","dt→0 得 Brownian noise","Fokker–Planck 描述密度","reverse drift 加 score","将扩散项改写为密度相关 drift","得到 probability flow ODE"])
-    mo.md(r"""
-    Brownian increment \(dW\) 的标准差是 \(\sqrt{dt}\)，不是 dt。
-    更具体地，在一个小时间段 \(\Delta t\) 内，
-    \[
-    \Delta W\sim\mathcal N(0,\Delta t),\qquad
-    X_{n+1}=X_n+f(X_n,t_n)\Delta t+g(t_n)\sqrt{\Delta t}\epsilon_n.
-    \]
-    这里 \(\epsilon_n\sim\mathcal N(0,1)\)，并且不同时间步独立。
+    mo.vstack(
+        [
+            mo.md("## 3–6. ODE、SDE 与密度演化"),
+            derivation_map(["离散 Gaussian 增量","dt→0 得 Brownian noise","Fokker–Planck 描述密度","reverse drift 加 score","将扩散项改写为密度相关 drift","得到 probability flow ODE"]),
+            mo.md(r"""
+            Brownian increment \(dW\) 的标准差是 \(\sqrt{dt}\)，不是 dt。
+            更具体地，在一个小时间段 \(\Delta t\) 内，
+            \[
+            \Delta W\sim\mathcal N(0,\Delta t),\qquad
+            X_{n+1}=X_n+f(X_n,t_n)\Delta t+g(t_n)\sqrt{\Delta t}\epsilon_n.
+            \]
+            这里 \(\epsilon_n\sim\mathcal N(0,1)\)，并且不同时间步独立。
 
-    Fokker–Planck：
-    \[
-    \partial_t p=-\nabla\cdot(fp)+\frac12g^2\Delta p.
-    \]
-    将 \(\Delta p=\nabla\cdot(p\nabla\log p)\) 代入，可得到 probability flow drift。
-    这一步要求 \(g\) 不依赖状态 \(x\)、密度足够光滑且边界行为合适；
-    更一般的矩阵值、状态相关 diffusion 还会出现额外项。
-    """)
+            Fokker–Planck：
+            \[
+            \partial_t p=-\nabla\cdot(fp)+\frac12g^2\Delta p.
+            \]
+            将 \(\Delta p=\nabla\cdot(p\nabla\log p)\) 代入，可得到 probability flow drift。
+            这一步要求 \(g\) 不依赖状态 \(x\)、密度足够光滑且边界行为合适；
+            更一般的矩阵值、状态相关 diffusion 还会出现额外项。
+            """),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -162,12 +167,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block,mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("ODE 与 SDE 的路径差别？","ODE 给定初值后确定，SDE 还受 Brownian 随机增量影响。"),
-        ("dt=.01，Brownian increment 标准差？","sqrt(.01)=.1。"),
-        ("为何 probability flow ODE 仍需 score？","它用 score 把 SDE 的扩散效应改写为确定性密度运输 drift。"),
-        ("减小 particles，观察方差曲线。","Monte Carlo 抖动增大，但理论趋势不变。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("ODE 与 SDE 的路径差别？","ODE 给定初值后确定，SDE 还受 Brownian 随机增量影响。"),
+                ("dt=.01，Brownian increment 标准差？","sqrt(.01)=.1。"),
+                ("为何 probability flow ODE 仍需 score？","它用 score 把 SDE 的扩散效应改写为确定性密度运输 drift。"),
+                ("减小 particles，观察方差曲线。","Monte Carlo 抖动增大，但理论趋势不变。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

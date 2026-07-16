@@ -36,8 +36,7 @@ def _():
 
 
 @app.cell
-def _(CHAPTERS, chapter_header, course_styles):
-    course_styles()
+def _(CHAPTERS, chapter_header):
     chapter_header(CHAPTERS[2], duration="60–90 分钟")
     return
 
@@ -91,8 +90,13 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–5. 即时数学与概率模型")
-    derivation_map(["选择 latent z", "根据 z 生成 x", "考虑所有可能 z", "得到数据的边缘概率 p(x)"])
+    mo.vstack(
+        [
+            mo.md("## 3–5. 即时数学与概率模型"),
+            derivation_map(["选择 latent z", "根据 z 生成 x", "考虑所有可能 z", "得到数据的边缘概率 p(x)"]),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -206,12 +210,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("均值和标准差分别控制 Gaussian 的什么？", "均值控制中心位置，标准差控制分散宽度；标准差必须大于 0。"),
-        ("若两个 latent 状态先验各为 0.5，生成 x 的概率分别为 0.2 和 0.8，求 p(x)。", r"\(p(x)=0.2\times0.5+0.8\times0.5=0.5\)。"),
-        ("为什么采样代码先生成 epsilon，再乘 sigma、加 mu？", "标准正态容易采样；仿射变换把它移动并缩放成目标 Gaussian，同时为后续重参数化铺路。"),
-        ("保持 mu 不变，逐步增大 sigma。观察曲线峰值和样本范围，并解释为什么总面积仍接近 1。", "分布变宽时峰值下降，因为相同总概率被摊到更宽区间；归一化常数随 sigma 调整，使总面积保持 1。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("均值和标准差分别控制 Gaussian 的什么？", "均值控制中心位置，标准差控制分散宽度；标准差必须大于 0。"),
+                ("若两个 latent 状态先验各为 0.5，生成 x 的概率分别为 0.2 和 0.8，求 p(x)。", r"\(p(x)=0.2\times0.5+0.8\times0.5=0.5\)。"),
+                ("为什么采样代码先生成 epsilon，再乘 sigma、加 mu？", "标准正态容易采样；仿射变换把它移动并缩放成目标 Gaussian，同时为后续重参数化铺路。"),
+                ("保持 mu 不变，逐步增大 sigma。观察曲线峰值和样本范围，并解释为什么总面积仍接近 1。", "分布变宽时峰值下降，因为相同总概率被摊到更宽区间；归一化常数随 sigma 调整，使总面积保持 1。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

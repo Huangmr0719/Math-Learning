@@ -42,8 +42,7 @@ def _():
 
 
 @app.cell
-def _(CHAPTERS, chapter_header, course_styles):
-    course_styles()
+def _(CHAPTERS, chapter_header):
     chapter_header(CHAPTERS[7], duration="90–150 分钟")
     return
 
@@ -104,8 +103,13 @@ def _(intuition_and_rigor):
 
 @app.cell
 def _(derivation_map, mo):
-    mo.md("## 3–5. 从公式到完整 forward")
-    derivation_map(["x 输入 encoder", "得到 mu 与 logvar", "重参数化采样 z", "decoder 得到 x_hat", "计算 reconstruction + KL", "反向传播更新参数"])
+    mo.vstack(
+        [
+            mo.md("## 3–5. 从公式到完整 forward"),
+            derivation_map(["x 输入 encoder", "得到 mu 与 logvar", "重参数化采样 z", "decoder 得到 x_hat", "计算 reconstruction + KL", "反向传播更新参数"]),
+        ],
+        gap=0.8,
+    )
     return
 
 
@@ -160,6 +164,7 @@ def _(
     COLORS,
     epochs,
     latent_dim,
+    load_digits_data,
     mo,
     plt,
     torch,
@@ -168,16 +173,36 @@ def _(
     z1,
     z2,
 ):
-    _controls = mo.hstack([latent_dim, epochs, train_button], widths="equal")
+    _controls = mo.vstack(
+        [
+            mo.hstack([latent_dim, epochs, train_button], widths="equal"),
+            mo.hstack([z1, z2], widths="equal"),
+        ],
+        gap=0.6,
+    )
     if training_result is None:
-        _view = mo.callout(
-            mo.md(
-                """
-                训练尚未执行。先阅读公式与代码，再点击按钮。
-                这样可以保证 notebook 打开时不会意外触发昂贵计算。
-                """
-            ),
-            kind="warn",
+        _preview_images, _preview_labels = load_digits_data()
+        _preview_fig, _preview_axes = plt.subplots(2, 5, figsize=(7, 3.2))
+        for _index, _axis in enumerate(_preview_axes.ravel()):
+            _axis.imshow(_preview_images[_index].reshape(8, 8), cmap="gray")
+            _axis.set_title(f"label={int(_preview_labels[_index])}")
+            _axis.axis("off")
+        _preview_fig.suptitle("离线 digits 数据：训练按钮按下前只展示数据，不训练模型")
+        _preview_fig.tight_layout()
+        _view = mo.vstack(
+            [
+                mo.callout(
+                    mo.md(
+                        """
+                        训练尚未执行。先观察数据并阅读公式与代码，再点击按钮。
+                        这样可以保证 notebook 打开时不会意外触发昂贵计算。
+                        """
+                    ),
+                    kind="warn",
+                ),
+                _preview_fig,
+            ],
+            gap=0.6,
         )
     else:
         _history = training_result.history
@@ -233,7 +258,6 @@ def _(
         _fig.tight_layout()
         _view = mo.vstack(
             [
-                mo.hstack([z1, z2], widths="equal"),
                 mo.md(
                     fr"""
                     训练完成：**{epochs.value} epochs**，latent dimension = **{latent_dim.value}**。
@@ -343,12 +367,17 @@ def _(mo):
 
 @app.cell
 def _(exercise_block, mo):
-    mo.md("## 11. 分层练习")
-    exercise_block(
-        ("用一条完整链路解释一张图片如何经过 VAE。", "图片进入 encoder 得到 mu/logvar；重参数化采样 z；decoder 根据 z 输出重构；重构项与 KL 共同更新 encoder 和 decoder。"),
-        ("若 reconstruction=40，KL=2，total 是多少？若 beta=4 呢？", "标准 VAE total=42；beta=4 时 total=40+4×2=48，这会更强调 posterior 接近 prior。"),
-        ("为什么必须分别记录 total、reconstruction 和 KL？", "total 只能告诉总体优化结果；分项日志才能判断重构—正则权衡、KL 是否趋近 0，以及训练异常来自哪里。"),
-        ("分别选择 latent dim 2、4、8 训练。比较重构、KL 和可视化难度。", "通常容量增加可能改善重构，但二维以上无法直接完整绘图；结果受训练轮数和随机性影响，应使用相同设置公平比较。"),
+    mo.vstack(
+        [
+            mo.md("## 11. 分层练习"),
+            exercise_block(
+                ("用一条完整链路解释一张图片如何经过 VAE。", "图片进入 encoder 得到 mu/logvar；重参数化采样 z；decoder 根据 z 输出重构；重构项与 KL 共同更新 encoder 和 decoder。"),
+                ("若 reconstruction=40，KL=2，total 是多少？若 beta=4 呢？", "标准 VAE total=42；beta=4 时 total=40+4×2=48，这会更强调 posterior 接近 prior。"),
+                ("为什么必须分别记录 total、reconstruction 和 KL？", "total 只能告诉总体优化结果；分项日志才能判断重构—正则权衡、KL 是否趋近 0，以及训练异常来自哪里。"),
+                ("分别选择 latent dim 2、4、8 训练。比较重构、KL 和可视化难度。", "通常容量增加可能改善重构，但二维以上无法直接完整绘图；结果受训练轮数和随机性影响，应使用相同设置公平比较。"),
+            ),
+        ],
+        gap=0.8,
     )
     return
 

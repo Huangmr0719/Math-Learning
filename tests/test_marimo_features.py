@@ -2,7 +2,7 @@ import ast
 from pathlib import Path
 
 from src.teaching.catalog import CHAPTERS
-from src.teaching.components import course_map_table
+from src.teaching.components import chapter_navigation, course_map_table
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -143,6 +143,48 @@ def test_every_course_map_link_uses_an_existing_workspace_notebook():
         assert (
             f'href="?file={chapter.part}/{chapter.filename}"' in html
         )
+
+
+def test_chapter_navigation_handles_first_middle_and_last_chapters():
+    first = chapter_navigation(CHAPTERS[1])._repr_html_()
+    middle = chapter_navigation(CHAPTERS[15])._repr_html_()
+    last = chapter_navigation(CHAPTERS[30])._repr_html_()
+
+    assert 'href="?file=00_home.py"' in first
+    assert "← 上一章" not in first
+    assert 'href="?file=part01_vae/02_latent_distribution.py"' in first
+
+    assert (
+        'href="?file=part03_diffusion_ddpm/14_iterative_denoising.py"'
+        in middle
+    )
+    assert (
+        'href="?file=part03_diffusion_ddpm/'
+        '16_ddpm_posterior_and_reverse.py"' in middle
+    )
+    assert "← 上一章" in middle
+    assert "下一章 →" in middle
+
+    assert (
+        'href="?file=part06_flow_matching/'
+        '29_optimal_transport_and_rectified_flow.py"' in last
+    )
+    assert "下一章 →" not in last
+    assert 'aria-label="章节导航"' in last
+
+
+def test_every_adjacent_chapter_navigation_link_targets_a_real_notebook():
+    for number, chapter in CHAPTERS.items():
+        html = chapter_navigation(chapter)._repr_html_()
+        for adjacent_number in (number - 1, number + 1):
+            adjacent = CHAPTERS.get(adjacent_number)
+            if adjacent is None:
+                continue
+            notebook = NOTEBOOKS / adjacent.part / adjacent.filename
+            assert notebook.is_file()
+            assert (
+                f'href="?file={adjacent.part}/{adjacent.filename}"' in html
+            )
 
 
 def test_every_formal_chapter_is_a_real_reactive_marimo_notebook():

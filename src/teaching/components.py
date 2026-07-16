@@ -12,7 +12,7 @@ from urllib.parse import quote
 
 import marimo as mo
 
-from .catalog import PARTS, ChapterSpec
+from .catalog import CHAPTERS, PARTS, ChapterSpec
 
 
 def course_styles() -> mo.Html:
@@ -137,6 +137,68 @@ def course_styles() -> mo.Html:
             white-space: nowrap;
           }
           .gm-course-link:hover { text-decoration: underline; }
+          .gm-chapter-nav {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            gap: .7rem;
+            align-items: stretch;
+            margin-top: .5rem;
+          }
+          .gm-chapter-nav-link {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 4.4rem;
+            padding: .7rem .85rem;
+            border: 1px solid #d9e2ec;
+            border-radius: 12px;
+            background: var(--gm-paper);
+            color: var(--gm-ink);
+            text-decoration: none;
+            line-height: 1.35;
+          }
+          .gm-chapter-nav-link:hover {
+            border-color: var(--gm-blue);
+            box-shadow: 0 4px 14px rgb(37 99 235 / 12%);
+          }
+          .gm-chapter-nav-link.is-previous { grid-column: 1; }
+          .gm-chapter-nav-link.is-next {
+            grid-column: 3;
+            text-align: right;
+          }
+          .gm-chapter-nav-link.is-home {
+            grid-column: 2;
+            min-width: 7rem;
+            align-items: center;
+            text-align: center;
+          }
+          .gm-chapter-nav-label {
+            color: var(--gm-blue);
+            font-size: .78rem;
+            font-weight: 700;
+          }
+          .gm-chapter-nav-title {
+            margin-top: .18rem;
+            font-size: .9rem;
+          }
+          .gm-chapter-nav-placeholder { min-width: 0; }
+          @media (max-width: 720px) {
+            .gm-chapter-nav { grid-template-columns: 1fr 1fr; }
+            .gm-chapter-nav-link.is-home {
+              grid-column: 1 / -1;
+              grid-row: 1;
+              min-height: 3.2rem;
+            }
+            .gm-chapter-nav-link.is-previous {
+              grid-column: 1;
+              grid-row: 2;
+            }
+            .gm-chapter-nav-link.is-next {
+              grid-column: 2;
+              grid-row: 2;
+            }
+            .gm-chapter-nav-placeholder { display: none; }
+          }
         </style>
         """
     )
@@ -200,10 +262,7 @@ def course_map_table(
     rendered_rows = []
     for row in rows:
         progress = row["学习进度"]
-        notebook_path = row["入口"].removeprefix("./")
-        # marimo 的目录工作区通过根页面的 `file` 查询参数选择 notebook。
-        # 普通相对链接会被浏览器解释为 HTTP 路径，因而得到 404。
-        notebook_href = f"?file={quote(notebook_path, safe='/')}"
+        notebook_href = _workspace_notebook_href(row["入口"])
         progress_class = {
             "已完成": "is-done",
             "下一章": "is-next",
@@ -254,6 +313,72 @@ def course_map_table(
     )
 
 
+def _workspace_notebook_href(path: str) -> str:
+    """Build a link understood by a marimo directory workspace."""
+
+    notebook_path = path.removeprefix("./")
+    # marimo 的目录工作区通过根页面的 `file` 查询参数选择 notebook。
+    # 普通相对链接会被浏览器解释为 HTTP 路径，因而得到 404。
+    return f"?file={quote(notebook_path, safe='/')}"
+
+
+def chapter_navigation(spec: ChapterSpec) -> mo.Html:
+    """Render previous/home/next navigation for one formal chapter."""
+
+    previous_spec = CHAPTERS.get(spec.number - 1)
+    next_spec = CHAPTERS.get(spec.number + 1)
+
+    def chapter_link(
+        target: ChapterSpec,
+        *,
+        direction: str,
+        label: str,
+    ) -> str:
+        href = _workspace_notebook_href(f"{target.part}/{target.filename}")
+        aria_label = escape(
+            f"{label}：第 {target.number} 章 {target.title}",
+            quote=True,
+        )
+        title = escape(target.title)
+        return f"""
+        <a class="gm-chapter-nav-link {direction}"
+           href="{escape(href, quote=True)}"
+           aria-label="{aria_label}">
+          <span class="gm-chapter-nav-label">{escape(label)}</span>
+          <span class="gm-chapter-nav-title">
+            第 {target.number} 章 · {title}
+          </span>
+        </a>
+        """
+
+    previous = (
+        chapter_link(previous_spec, direction="is-previous", label="← 上一章")
+        if previous_spec is not None
+        else '<span class="gm-chapter-nav-placeholder" aria-hidden="true"></span>'
+    )
+    next_link = (
+        chapter_link(next_spec, direction="is-next", label="下一章 →")
+        if next_spec is not None
+        else '<span class="gm-chapter-nav-placeholder" aria-hidden="true"></span>'
+    )
+    home_href = _workspace_notebook_href("00_home.py")
+
+    return mo.Html(
+        f"""
+        <nav class="gm-chapter-nav" aria-label="章节导航">
+          {previous}
+          <a class="gm-chapter-nav-link is-home"
+             href="{escape(home_href, quote=True)}"
+             aria-label="返回课程首页">
+            <span class="gm-chapter-nav-label">课程地图</span>
+            <span class="gm-chapter-nav-title">返回首页</span>
+          </a>
+          {next_link}
+        </nav>
+        """
+    )
+
+
 def exercise_block(
     understanding: tuple[str, str],
     calculation: tuple[str, str],
@@ -283,13 +408,18 @@ def exercise_block(
 
 def chapter_footer(spec: ChapterSpec, takeaways: Sequence[str]) -> mo.Html:
     summary = "\n".join(f"- {item}" for item in takeaways)
+    bridge_title = (
+        "课程结束后的下一步"
+        if spec.number == max(CHAPTERS)
+        else "下一章为什么自然出现？"
+    )
     return mo.vstack(
         [
             mo.md(f"## 本章总结\n\n{summary}"),
             mo.callout(
                 mo.md(
                     f"""
-                    **下一章为什么自然出现？**
+                    **{bridge_title}**
 
                     {spec.bridge}
                     """
@@ -302,6 +432,7 @@ def chapter_footer(spec: ChapterSpec, takeaways: Sequence[str]) -> mo.Html:
                 > 不要带着一个模糊的“好像懂了”继续前进。
                 """
             ),
+            chapter_navigation(spec),
         ],
         gap=0.8,
     )

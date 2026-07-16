@@ -225,3 +225,14 @@ def test_shared_components_use_marimo_tabs_and_lazy_accordions():
     assert "mo.tabs(" in source
     assert "mo.accordion(" in source
     assert "lazy=True" in source
+
+
+def test_custom_light_surfaces_define_dark_theme_safe_text_colors():
+    source = (ROOT / "src/teaching/components.py").read_text(encoding="utf-8")
+    assert ".gm-hero h1 {" in source
+    assert "font-size: clamp(1.75rem, 3vw, 2.5rem);" in source
+    assert ".gm-flow {" in source and "color: var(--gm-ink);" in source
+    assert ".gm-course-table {" in source
+    assert ".gm-course-section > h2 {" in source
+    assert ".markdown.prose table {" in source
+    assert "overflow-x: auto;" in source

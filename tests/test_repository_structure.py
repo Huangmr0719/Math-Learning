@@ -1,7 +1,10 @@
+import re
 from pathlib import Path
+from urllib.parse import unquote
 
 
 ROOT = Path(__file__).resolve().parents[1]
+MARKDOWN_LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
 
 def test_learning_workspace_has_clear_top_level_sections():
@@ -51,3 +54,34 @@ def test_legacy_derivations_are_not_maintained_in_parallel():
     assert not (ROOT / "math-foundations").exists()
     assert not (ROOT / "vae-derivations").exists()
     assert not (ROOT / "diffusion-derivations").exists()
+
+
+def test_markdown_files_have_consistent_basic_formatting():
+    problems = []
+    for path in sorted(ROOT.rglob("*.md")):
+        if any(part.startswith(".") for part in path.relative_to(ROOT).parts):
+            continue
+
+        text = path.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        if any(line.rstrip() != line for line in lines):
+            problems.append(f"{path.relative_to(ROOT)}: 行尾存在多余空白")
+        if any("\t" in line for line in lines):
+            problems.append(f"{path.relative_to(ROOT)}: 包含 tab 字符")
+        if sum(line.lstrip().startswith("```") for line in lines) % 2:
+            problems.append(f"{path.relative_to(ROOT)}: 代码围栏未闭合")
+
+        for target in MARKDOWN_LINK.findall(text):
+            target = target.strip().strip("<>")
+            if (
+                not target
+                or target.startswith(("#", "http://", "https://", "mailto:"))
+            ):
+                continue
+            local_target = unquote(target.split("#", 1)[0])
+            if not (path.parent / local_target).resolve().exists():
+                problems.append(
+                    f"{path.relative_to(ROOT)}: 本地链接不存在：{target}"
+                )
+
+    assert not problems, "\n".join(problems)

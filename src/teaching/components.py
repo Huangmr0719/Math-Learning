@@ -32,7 +32,15 @@ def course_styles() -> mo.Html:
             border: 1px solid #d9e2ec;
             border-radius: 18px;
             background: linear-gradient(135deg, #fffdf8 0%, #eff6ff 100%);
+            color: var(--gm-ink);
             margin-bottom: 1rem;
+          }
+          .gm-hero h1 {
+            margin: .35rem 0 .65rem;
+            color: var(--gm-ink);
+            font-size: clamp(1.75rem, 3vw, 2.5rem);
+            font-weight: 750;
+            line-height: 1.2;
           }
           .gm-kicker { color: var(--gm-blue); font-weight: 700; letter-spacing: .04em; }
           .gm-question { font-size: 1.25rem; line-height: 1.65; color: var(--gm-ink); }
@@ -41,7 +49,22 @@ def course_styles() -> mo.Html:
             padding: .9rem 1rem;
             border-left: 4px solid var(--gm-blue);
             background: #f8fafc;
+            color: var(--gm-ink);
             line-height: 1.8;
+          }
+          .markdown.prose table {
+            display: block;
+            max-width: 100%;
+            overflow-x: auto;
+          }
+          .markdown.prose pre {
+            max-width: 100%;
+            overflow-x: auto;
+          }
+          .markdown.prose img,
+          .markdown.prose svg {
+            max-width: 100%;
+            height: auto;
           }
           .gm-code-map td, .gm-code-map th { padding: .45rem .7rem; }
           .gm-status {
@@ -54,6 +77,11 @@ def course_styles() -> mo.Html:
             font-weight: 700;
           }
           .gm-course-section { margin-top: 1.2rem; }
+          .gm-course-section > h2 {
+            margin: 0 0 .55rem;
+            font-size: 1.2rem;
+            line-height: 1.35;
+          }
           .gm-course-table-wrap {
             overflow-x: auto;
             border: 1px solid #d9e2ec;
@@ -64,6 +92,7 @@ def course_styles() -> mo.Html:
             width: 100%;
             border-collapse: collapse;
             min-width: 680px;
+            color: var(--gm-ink);
           }
           .gm-course-table th,
           .gm-course-table td {

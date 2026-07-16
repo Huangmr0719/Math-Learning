@@ -118,8 +118,31 @@ def test_course_map_uses_semantic_html_instead_of_dynamic_markdown_table():
     assert '<table class="gm-course-table">' in html
     assert html.count("<tr>") == 3  # one header row and two chapter rows
     assert "标题 &lt;不会被当作 HTML&gt;" in html
-    assert 'href="./part/01.py"' in html
+    assert 'href="?file=part/01.py"' in html
+    assert 'target="_blank"' in html
+    assert 'rel="noopener noreferrer"' in html
     assert "is-next" in html
+
+
+def test_every_course_map_link_uses_an_existing_workspace_notebook():
+    rows = [
+        {
+            "章节": f"{chapter.number:02d}",
+            "标题": chapter.title,
+            "学习进度": "未开始",
+            "入口": f"./{chapter.part}/{chapter.filename}",
+        }
+        for chapter in CHAPTERS.values()
+    ]
+    html = course_map_table("全部章节", rows)._repr_html_()
+
+    assert html.count('href="?file=') == len(CHAPTERS)
+    for chapter in CHAPTERS.values():
+        notebook_path = NOTEBOOKS / chapter.part / chapter.filename
+        assert notebook_path.is_file()
+        assert (
+            f'href="?file={chapter.part}/{chapter.filename}"' in html
+        )
 
 
 def test_every_formal_chapter_is_a_real_reactive_marimo_notebook():

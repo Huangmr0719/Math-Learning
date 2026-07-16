@@ -85,3 +85,17 @@ def test_markdown_files_have_consistent_basic_formatting():
                 )
 
     assert not problems, "\n".join(problems)
+
+
+def test_documented_course_launch_uses_a_directory_workspace():
+    for relative_path in ("README.md", "learning-path.md"):
+        text = (ROOT / relative_path).read_text(encoding="utf-8")
+        bash_blocks = re.findall(r"```bash\s*\n(.*?)```", text, re.DOTALL)
+        documented_commands = {
+            line.strip()
+            for block in bash_blocks
+            for line in block.splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        }
+        assert "marimo edit notebooks/00_home.py" not in documented_commands
+        assert "marimo edit notebooks" in documented_commands

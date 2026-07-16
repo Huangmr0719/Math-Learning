@@ -49,14 +49,19 @@ source .venv/bin/activate
 python -m pip install -e .
 ```
 
-打开课程首页：
+启动包含全部章节的 marimo 目录工作区：
 
 ```bash
-marimo edit notebooks/00_home.py
+marimo edit notebooks
 ```
 
+浏览器打开后，先选择 `00_home.py` 进入课程首页。不要使用
+`marimo edit notebooks/00_home.py` 单独启动首页：单文件模式不会注册其他
+30 个章节，因此首页中的章节入口无法打开。
+
 第一次学习建议从第 1 章开始。首页提供六个部分的课程地图、章节状态、
-统一符号索引和跨模型符号切换说明。
+统一符号索引和跨模型符号切换说明。章节链接会在新标签页中打开，以便保留
+课程地图。
 
 ## 目录结构
 

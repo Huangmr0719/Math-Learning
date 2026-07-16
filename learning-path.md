@@ -161,8 +161,8 @@ ODE 可以运输分布
 ## 运行与验收
 
 ```bash
-# 打开课程首页
-marimo edit notebooks/00_home.py
+# 启动全部章节所在的目录工作区，再从文件列表打开 00_home.py
+marimo edit notebooks
 
 # 严格检查全部 notebook
 marimo check --strict notebooks

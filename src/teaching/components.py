@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
 from html import escape
+from urllib.parse import quote
 
 import marimo as mo
 
@@ -199,6 +200,10 @@ def course_map_table(
     rendered_rows = []
     for row in rows:
         progress = row["学习进度"]
+        notebook_path = row["入口"].removeprefix("./")
+        # marimo 的目录工作区通过根页面的 `file` 查询参数选择 notebook。
+        # 普通相对链接会被浏览器解释为 HTTP 路径，因而得到 404。
+        notebook_href = f"?file={quote(notebook_path, safe='/')}"
         progress_class = {
             "已完成": "is-done",
             "下一章": "is-next",
@@ -214,7 +219,10 @@ def course_map_table(
                 </span>
               </td>
               <td>
-                <a class="gm-course-link" href="{escape(row["入口"], quote=True)}">
+                <a class="gm-course-link"
+                   href="{escape(notebook_href, quote=True)}"
+                   target="_blank"
+                   rel="noopener noreferrer">
                   打开 notebook
                 </a>
               </td>

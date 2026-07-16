@@ -14,9 +14,9 @@ def _():
         _sys.path.insert(0, str(_root))
 
     import marimo as mo
-    from src.teaching import CHAPTERS, PARTS, course_styles
+    from src.teaching import CHAPTERS, PARTS, course_map_table, course_styles
 
-    return CHAPTERS, PARTS, course_styles, mo
+    return CHAPTERS, PARTS, course_map_table, course_styles, mo
 
 
 @app.cell
@@ -86,7 +86,7 @@ def _(PARTS, mo):
 
 
 @app.cell
-def _(CHAPTERS, PARTS, completed_through, mo, part_filter):
+def _(CHAPTERS, PARTS, completed_through, course_map_table, mo, part_filter):
     _sections = []
     for _part_key, _part_title in PARTS.items():
         if part_filter.value != "all" and _part_key != part_filter.value:
@@ -102,43 +102,26 @@ def _(CHAPTERS, PARTS, completed_through, mo, part_filter):
                     if _spec.number == completed_through.value + 1
                     else "未开始"
                 ),
-                "入口": f"[打开 notebook](./{_spec.part}/{_spec.filename})",
+                "入口": f"./{_spec.part}/{_spec.filename}",
             }
             for _spec in CHAPTERS.values()
             if _spec.part == _part_key
         ]
-        _table = "\n".join(
-            f"| {row['章节']} | {row['标题']} | {row['学习进度']} | {row['入口']} |"
-            for row in _rows
-        )
-        _sections.append(
-            mo.md(
-                f"""
-                ## {_part_title}
-
-                | 章节 | 标题 | 学习进度 | 入口 |
-                |---:|---|---|---|
-                {_table}
-                """
-            )
-        )
+        _sections.append(course_map_table(_part_title, _rows))
     if completed_through.value < 30:
         _next_spec = CHAPTERS[completed_through.value + 1]
         _next_message = f"建议下一步：**第 {_next_spec.number} 章 · {_next_spec.title}**。"
     else:
         _next_message = "你已经走完整条主线；建议返回第 30 章完成综合研究设计。"
+    _map_md = (
+        f"## 交互式课程地图\n\n"
+        f"当前记录：已完成 **{completed_through.value}/30** 章。\n"
+        f"{_next_message}\n\n"
+        "> 这里的进度控件用于规划当前学习会话，不会自动写入文件。"
+    )
     mo.vstack(
         [
-            mo.md(
-                f"""
-                ## 交互式课程地图
-
-                当前记录：已完成 **{completed_through.value}/30** 章。
-                {_next_message}
-
-                > 这里的进度控件用于规划当前学习会话，不会自动写入文件。
-                """
-            ),
+            mo.md(_map_md),
             mo.hstack([part_filter, completed_through], widths="equal"),
             *_sections,
         ],

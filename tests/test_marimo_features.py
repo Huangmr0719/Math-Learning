@@ -2,6 +2,7 @@ import ast
 from pathlib import Path
 
 from src.teaching.catalog import CHAPTERS
+from src.teaching.components import course_map_table
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -92,6 +93,33 @@ def test_home_uses_reactive_marimo_controls():
     assert "mo.ui.slider(" in source
     assert "part_filter.value" in source
     assert "completed_through.value" in source
+
+
+def test_course_map_uses_semantic_html_instead_of_dynamic_markdown_table():
+    table = course_map_table(
+        "测试部分",
+        [
+            {
+                "章节": "01",
+                "标题": "标题 <不会被当作 HTML>",
+                "学习进度": "下一章",
+                "入口": "./part/01.py",
+            },
+            {
+                "章节": "02",
+                "标题": "第二章",
+                "学习进度": "未开始",
+                "入口": "./part/02.py",
+            },
+        ],
+    )
+    html = table._repr_html_()
+
+    assert '<table class="gm-course-table">' in html
+    assert html.count("<tr>") == 3  # one header row and two chapter rows
+    assert "标题 &lt;不会被当作 HTML&gt;" in html
+    assert 'href="./part/01.py"' in html
+    assert "is-next" in html
 
 
 def test_every_formal_chapter_is_a_real_reactive_marimo_notebook():

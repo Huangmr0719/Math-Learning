@@ -5,6 +5,7 @@ from .components import (
     chapter_footer,
     chapter_header,
     chapter_scaffold,
+    course_map_table,
     course_styles,
     derivation_map,
     exercise_block,
@@ -19,10 +20,10 @@ __all__ = [
     "chapter_footer",
     "chapter_header",
     "chapter_scaffold",
+    "course_map_table",
     "course_styles",
     "derivation_map",
     "exercise_block",
     "intuition_and_rigor",
     "knowledge_checklist",
 ]
-

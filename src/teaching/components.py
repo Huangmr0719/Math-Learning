@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
+from html import escape
 
 import marimo as mo
 
@@ -52,6 +53,60 @@ def course_styles() -> mo.Html:
             font-size: .82rem;
             font-weight: 700;
           }
+          .gm-course-section { margin-top: 1.2rem; }
+          .gm-course-table-wrap {
+            overflow-x: auto;
+            border: 1px solid #d9e2ec;
+            border-radius: 14px;
+            background: var(--gm-paper);
+          }
+          .gm-course-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 680px;
+          }
+          .gm-course-table th,
+          .gm-course-table td {
+            padding: .7rem .8rem;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            vertical-align: middle;
+          }
+          .gm-course-table th {
+            color: var(--gm-muted);
+            background: #f8fafc;
+            font-size: .86rem;
+          }
+          .gm-course-table tr:last-child td { border-bottom: 0; }
+          .gm-course-number {
+            width: 3.4rem;
+            color: var(--gm-muted);
+            font-variant-numeric: tabular-nums;
+          }
+          .gm-course-progress {
+            display: inline-block;
+            padding: .12rem .5rem;
+            border-radius: 999px;
+            white-space: nowrap;
+            font-size: .8rem;
+            background: #f1f5f9;
+            color: #475569;
+          }
+          .gm-course-progress.is-done {
+            background: #dcfce7;
+            color: var(--gm-green);
+          }
+          .gm-course-progress.is-next {
+            background: #dbeafe;
+            color: var(--gm-blue);
+            font-weight: 700;
+          }
+          .gm-course-link {
+            color: var(--gm-blue);
+            text-decoration: none;
+            white-space: nowrap;
+          }
+          .gm-course-link:hover { text-decoration: underline; }
         </style>
         """
     )
@@ -98,6 +153,68 @@ def derivation_map(steps: Sequence[str]) -> mo.Html:
 def knowledge_checklist(items: Iterable[str]) -> mo.Html:
     text = "\n".join(f"- [ ] {item}" for item in items)
     return mo.md(text)
+
+
+def course_map_table(
+    part_title: str,
+    rows: Sequence[dict[str, str]],
+) -> mo.Html:
+    """Render one curriculum part without dynamic Markdown-table parsing.
+
+    Dynamic triple-quoted Markdown is fragile when an interpolated block contains
+    multiple lines: indentation may apply only to its first line, causing marimo
+    to render the header as code and later rows as ordinary text. Building a
+    semantic HTML table makes the result deterministic in edit and export modes.
+    """
+
+    rendered_rows = []
+    for row in rows:
+        progress = row["学习进度"]
+        progress_class = {
+            "已完成": "is-done",
+            "下一章": "is-next",
+        }.get(progress, "")
+        rendered_rows.append(
+            f"""
+            <tr>
+              <td class="gm-course-number">{escape(row["章节"])}</td>
+              <td>{escape(row["标题"])}</td>
+              <td>
+                <span class="gm-course-progress {progress_class}">
+                  {escape(progress)}
+                </span>
+              </td>
+              <td>
+                <a class="gm-course-link" href="{escape(row["入口"], quote=True)}">
+                  打开 notebook
+                </a>
+              </td>
+            </tr>
+            """
+        )
+
+    return mo.Html(
+        f"""
+        <section class="gm-course-section">
+          <h2>{escape(part_title)}</h2>
+          <div class="gm-course-table-wrap">
+            <table class="gm-course-table">
+              <thead>
+                <tr>
+                  <th>章节</th>
+                  <th>标题</th>
+                  <th>学习进度</th>
+                  <th>入口</th>
+                </tr>
+              </thead>
+              <tbody>
+                {''.join(rendered_rows)}
+              </tbody>
+            </table>
+          </div>
+        </section>
+        """
+    )
 
 
 def exercise_block(

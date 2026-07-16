@@ -1,0 +1,23 @@
+.DS_Store
+.pytest_cache/
+.venv/
+__pycache__/
+*.py[cod]
+
+# marimo 本地会话和缓存
+**/__marimo__/
+
+# 本地工具产物
+.omo/
+.codegraph
+
+# 导出文件可重新生成，只保留目录说明
+exports/*
+!exports/README.md
+
+# 大型训练产物
+checkpoints/
+data/
+*.ckpt
+*.pt
+*.pth

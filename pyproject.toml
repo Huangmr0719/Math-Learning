@@ -1,0 +1,23 @@
+[project]
+name = "generative-model-learning"
+version = "0.1.0"
+description = "面向高中数学基础学习者的 marimo 生成模型交互式教材"
+requires-python = ">=3.11"
+dependencies = [
+  "altair>=5.0",
+  "marimo>=0.23,<0.24",
+  "matplotlib>=3.8",
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "plotly>=5.20",
+  "scikit-learn>=1.5",
+  "scipy>=1.13",
+  "sympy>=1.13",
+  "torch>=2.7",
+  "torchvision>=0.22",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+

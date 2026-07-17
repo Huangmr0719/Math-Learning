@@ -50,7 +50,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     前六章已经分别得到：
 
@@ -62,7 +62,7 @@ def _(mo):
     本章把它们组装成一个最小但完整的 VAE。使用 scikit-learn 自带的
     8×8 handwritten digits 数据，不联网、不下载大型模型。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     \[
     x\rightarrow(\mu,\log\sigma^2)
@@ -105,7 +105,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–5. 从公式到完整 forward"),
+            mo.md("## 从公式到完整 forward"),
             derivation_map(["x 输入 encoder", "得到 mu 与 logvar", "重参数化采样 z", "decoder 得到 x_hat", "计算 reconstruction + KL", "反向传播更新参数"]),
         ],
         gap=0.8,
@@ -271,7 +271,7 @@ def _(
 
     mo.vstack(
         [
-            mo.md("## 7. 交互实验：显式训练、重构与 latent 采样"),
+            mo.md("## 交互实验：显式训练、重构与 latent 采样"),
             _controls,
             _view,
         ]
@@ -282,7 +282,7 @@ def _(
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 教学版核心代码
+    ## 教学版核心代码
 
     ```python
     def forward(self, x):
@@ -338,7 +338,7 @@ def _(TinyVAE, load_digits_data, mo, torch, vae_loss):
     )
     mo.md(
         fr"""
-        ## 6、9. shape 与数值烟测
+        ## shape 与数值烟测
 
         - input shape：`{tuple(_images[:16].shape)}`
         - reconstruction shape：`{tuple(_reconstruction.shape)}`
@@ -355,7 +355,7 @@ def _(TinyVAE, load_digits_data, mo, torch, vae_loss):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - **去掉 KL：** 模型更像普通 Autoencoder，重构可能变好，但随机 prior 采样会失去依据。
     - **令 \(z=\mu\)：** 训练变成确定性编码，无法体验 posterior 的随机性。
@@ -369,11 +369,11 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("用一条完整链路解释一张图片如何经过 VAE。", "图片进入 encoder 得到 mu/logvar；重参数化采样 z；decoder 根据 z 输出重构；重构项与 KL 共同更新 encoder 和 decoder。"),
                 ("若 reconstruction=40，KL=2，total 是多少？若 beta=4 呢？", "标准 VAE total=42；beta=4 时 total=40+4×2=48，这会更强调 posterior 接近 prior。"),
-                ("为什么必须分别记录 total、reconstruction 和 KL？", "total 只能告诉总体优化结果；分项日志才能判断重构—正则权衡、KL 是否趋近 0，以及训练异常来自哪里。"),
+                ("补全日志字典：`metrics = {'total': ____, 'recon': ____, 'kl': ____}`；为什么不能只保存 total？", "分别填 `total_loss.item()`、`reconstruction_loss.item()`、`kl_loss.item()`。total 只显示总体结果；分项日志才能诊断重构—正则权衡及 KL 是否趋近 0。"),
                 ("分别选择 latent dim 2、4、8 训练。比较重构、KL 和可视化难度。", "通常容量增加可能改善重构，但二维以上无法直接完整绘图；结果受训练轮数和随机性影响，应使用相同设置公平比较。"),
             ),
         ],

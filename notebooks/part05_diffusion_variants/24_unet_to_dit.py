@@ -27,12 +27,12 @@ def _(CHAPTERS,chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     Diffusion 的概率公式没有规定 denoiser 必须是 UNet。DiT 把 latent image 切成 patch
     token，用 Transformer 预测噪声或 velocity。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 输入输出必须保持相同空间 shape。
     - 时间与条件信息要注入网络。
@@ -62,7 +62,7 @@ def _(intuition_and_rigor):
 def _(derivation_map,mo):
     mo.vstack(
         [
-            mo.md("## 3–6. Patch embedding 与 self-attention"),
+            mo.md("## Patch embedding 与 self-attention"),
             derivation_map(["latent 切 patch","每个 patch 展平线性投影","加入位置/时间/条件","QK^T 得 attention","加权 V","投影回 patch 并重组"]),
             mo.md(r"""
             \[
@@ -117,7 +117,7 @@ def _(COLORS,mo,np,patch,plt,resolution):
     _axes[0].set_yscale("log");_axes[0].set_title("relative attention N²")
     _axes[1].imshow(_matrix,cmap="viridis",aspect="auto");_axes[1].set_title("toy attention rows sum to 1")
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. Token 数与 attention 成本
+    mo.vstack([mo.md(fr"""## Token 数与 attention 成本
 
     当前 token 数 \(N={_n}\)，attention score 元素约 \(N^2={_n**2:,}\)。
     当前 \(P={patch.value}\) 能整除 \(H=W={resolution.value}\)，因此 patchify
@@ -129,7 +129,7 @@ def _(COLORS,mo,np,patch,plt,resolution):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. Shape 代码
+    ## Shape 代码
 
     ```python
     # x: [B,C,H,W] -> tokens: [B,N,P*P*C] -> [B,N,D]
@@ -140,7 +140,7 @@ def _(mo):
     assert prediction.shape == x.shape
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - patch size 不整除 H/W，却用整数除法静默截断 token 数：重组 shape 会失败。
     - attention softmax 沿 query 轴：每个 query 不再对 keys 归一化。
@@ -155,11 +155,11 @@ def _(mo):
 def _(exercise_block,mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("UNet 与 DiT 的核心差别？","UNet 主要用多尺度卷积，DiT 把图像表示为 token 并用 self-attention 交互。"),
                 ("64×64、P=8，N？","8×8=64 tokens。"),
-                ("为什么输出要 unpatchify？","扩散 sampler 需要与输入 xt 相同的空间张量 shape。"),
+                ("设 `patches: [B,N,P*P*C]` 且 `N=(H/P)*(W/P)`，写出 unpatchify 的核心 reshape/permute，并给出输出 shape。","一种与 patch 内排列 `[P,P,C]` 对应的写法是 `patches.view(B,H//P,W//P,P,P,C).permute(0,5,1,3,2,4).reshape(B,C,H,W)`。输出必须是 `[B,C,H,W]`，与输入 `x_t` 一致；若 patch flatten 顺序不同，permute 也必须相应改变。"),
                 ("减小 patch，观察 N²。","token 数按 1/P² 增长，attention 矩阵按约 1/P⁴ 增长。"),
             ),
         ],

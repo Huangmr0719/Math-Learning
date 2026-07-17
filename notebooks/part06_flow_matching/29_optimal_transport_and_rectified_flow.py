@@ -28,7 +28,7 @@ def _(CHAPTERS,chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     Flow Matching 的线性路径仍需要决定哪个 source 样本配哪个 target 样本。
     随机 pairing 可能让轨迹交叉、速度互相抵消。Optimal Transport（OT）
@@ -36,7 +36,7 @@ def _(mo):
     coupling 出发，学习尽量沿配对直线运动的 ODE，并通过 rectification/reflow
     逐步改善 learned coupling。二者有关，但不是同一个算法。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 28 章：单对样本速度为 x1-x0。
     - 第 2 章：联合概率表的行和、列和给出边缘分布。
@@ -74,7 +74,7 @@ def _(intuition_and_rigor):
 def _(derivation_map,mo):
     mo.vstack(
         [
-            mo.md("## 3–6. Coupling、transport cost 与 reflow"),
+            mo.md("## Coupling、transport cost 与 reflow"),
             derivation_map(["固定 source/target marginals","选择联合 pairing","计算平方运输成本","寻找低成本 coupling","训练 velocity","用模型生成新 pairs","再次 rectification"]),
             mo.md(r"""
             Rectified Flow 的 reflow 思想：先用已有模型把 source 样本映射到生成终点，
@@ -163,7 +163,7 @@ def _(COLORS,coupling,mo,np,pair_seed,plt):
     _t=np.linspace(0,1,100);_paths=(1-_t[:,None])*_x0[None,:]+_t[:,None]*_paired[None,:]
     _axes[1].plot(_t,_paths,alpha=.5);_axes[1].set_title("linear interpolation paths")
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. Coupling 改变路径
+    mo.vstack([mo.md(fr"""## Coupling 改变路径
 
     当前平均平方 transport cost={_cost:.4f}。一维排序 pairing 是二次成本 OT 的解；
     高维情形不能简单逐坐标排序。"""),mo.hstack([coupling,pair_seed],widths="equal"),_fig])
@@ -173,7 +173,7 @@ def _(COLORS,coupling,mo,np,pair_seed,plt):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. Minibatch pairing 代码
+    ## Minibatch pairing 代码
 
     ```python
     # cost[i,j] 是 source i 到 target j 的平方距离。
@@ -183,7 +183,7 @@ def _(mo):
     target_velocity = paired_x1 - x0
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - 把独立采样称为唯一 coupling：它只是众多联合分布之一。
     - 把 Rectified Flow 等同于“先精确求 OT”：rectification 可从任意 coupling 出发。
@@ -199,12 +199,12 @@ def _(mo):
 def _(exercise_block,mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("coupling 改变边缘分布吗？","合法 coupling 必须保持指定的 source 和 target 边缘；它改变的是联合配对。若行和或列和改变，那张表就不再属于同一个 Π(p0,p1)。"),
                 ("source=[0,2]、target=[1,3]，排序成本均值？","((1-0)^2+(3-2)^2)/2=1。"),
-                ("cost matrix shape 为什么是 [B,B]？","每个 source 都要与 batch 中每个 target 计算候选成本。"),
-                ("切换 coupling，观察交叉与成本。","排序 pairing 通常减少一维交叉和平方成本。"),
+                ("已知 `source,target: [B,D]`，写出两两平方欧氏距离 cost matrix，并说明 shape。","写 `cost = ((source[:, None, :] - target[None, :, :]) ** 2).sum(dim=-1)`，shape 为 `[B,B]`：第 `(i,j)` 项是第 i 个 source 与第 j 个 target 的候选成本。"),
+                ("切换 coupling，观察交叉与成本。","在一维、等质量经验分布、平方距离成本且只考虑一一 permutation matching 时，排序配对是最优的，不只是经验上“通常更好”。更高维或不同约束下不能直接套用这个结论。"),
             ),
         ],
         gap=0.8,

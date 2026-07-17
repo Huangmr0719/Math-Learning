@@ -27,7 +27,7 @@ def _(CHAPTERS,chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     第 26 章说明 ODE 可以运输概率分布。Continuous Normalizing Flow 直接定义
     \[
@@ -35,7 +35,7 @@ def _(mo):
     \]
     从简单 base distribution 流向数据分布，并同时追踪密度变化。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 13 章：离散可逆变换用 log determinant 修正密度。
     - 第 25 章：ODE solver 沿速度场推进状态。
@@ -68,7 +68,7 @@ def _(intuition_and_rigor):
 def _(derivation_map,mo):
     mo.vstack(
         [
-            mo.md("## 3–6. 从概率守恒到瞬时变量替换"),
+            mo.md("## 从概率守恒到瞬时变量替换"),
             derivation_map(["小体积内概率守恒","流入减流出得到 continuity equation","沿粒子轨迹用链式法则","展开 divergence product","抵消密度梯度项","得到 d log p/dt=-div v"]),
             mo.md(r"""
             \[
@@ -137,7 +137,7 @@ def _(COLORS,expansion,mo,np,plt,time):
     _grid=np.linspace(-2,2,20);_axes[1].quiver(_grid,np.zeros_like(_grid),expansion.value*_grid,np.zeros_like(_grid),angles="xy",scale_units="xy",scale=1,color=COLORS["prior"])
     _axes[1].set_ylim(-.5,.5);_axes[1].set_title("v(x)=a x")
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. 解析 ODE 验证
+    mo.vstack([mo.md(fr"""## 解析 ODE 验证
 
     \(x_t=e^{{at}}x_0\)。理论 variance={_theory_var:.4f}，
     样本 variance={_xt.var():.4f}；单维 log-density change={_log_density_change:.4f}。"""),mo.hstack([expansion,time],widths="equal"),_fig])
@@ -147,7 +147,7 @@ def _(COLORS,expansion,mo,np,plt,time):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 增广 ODE 代码
+    ## 增广 ODE 代码
 
     ```python
     def augmented_dynamics(t, state):
@@ -158,7 +158,7 @@ def _(mo):
         return velocity, d_log_p
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - 用 determinant 代替 divergence：CNF 是瞬时 trace。
     - divergence 正时密度增加：符号相反，向外散开使 log density 降低。
@@ -173,11 +173,11 @@ def _(mo):
 def _(exercise_block,mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("divergence 正代表什么？","局部体积向外膨胀，因此沿轨迹的 log density 下降。"),
-                ("二维 v=ax，divergence？","2a，因为两个对角偏导各为 a。"),
-                ("为什么 log_p shape 是 [B]？","每个 batch 样本对应一个标量密度值。"),
+                ("二维向量场 `v(x)=a*x` 的 divergence 是多少？","`2a`，因为 `v_1=a*x_1`、`v_2=a*x_2`，两个对角偏导各为 `a`。这里的 `x` 是二维向量，不是一个标量。"),
+                ("若 `velocity: [B,D]`、`divergence: [B]`，写出瞬时 log-density 更新并检查 shape。","写 `dlogp_dt = -divergence`，并检查 `assert dlogp_dt.shape == (B,)`。每个 batch 样本只有一个标量密度，因此不能保留 feature 轴；实际积分时 `log_p` 也应是 `[B]`。"),
                 ("把 a 调为负，观察分布。","粒子汇聚、方差下降、密度升高。"),
             ),
         ],

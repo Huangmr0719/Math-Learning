@@ -44,7 +44,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     上一章的 encoder 为每个输入给出一个点 \(z\)。问题是：这些点之间可能有大片空洞，
     我们也不知道随机生成时应该从哪里取点。
@@ -56,7 +56,7 @@ def _(mo):
 
     分布给我们两样东西：哪些位置更可能，以及怎样随机采样。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 1 章：latent 是压缩表示。
     - 一个确定的点只有一个位置；一个分布描述一组可能位置。
@@ -92,7 +92,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–5. 即时数学与概率模型"),
+            mo.md("## 即时数学与概率模型"),
             derivation_map(["选择 latent z", "根据 z 生成 x", "考虑所有可能 z", "得到数据的边缘概率 p(x)"]),
         ],
         gap=0.8,
@@ -165,7 +165,7 @@ def _(COLORS, mo, mu_slider, np, plt, sigma_slider):
         [
             mo.md(
                 fr"""
-                ## 7. 交互实验：点变成一团概率雾
+                ## 交互实验：点变成一团概率雾
 
                 当前 \(Z\sim\mathcal N({_mu:.1f},{_sigma:.1f}^2)\)。
 
@@ -184,7 +184,7 @@ def _(COLORS, mo, mu_slider, np, plt, sigma_slider):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8–10. 代码映射、验证与反例
+    ## 代码映射、验证与反例
 
     ```python
     # epsilon 来自标准正态 N(0, 1)。
@@ -212,11 +212,11 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("均值和标准差分别控制 Gaussian 的什么？", "均值控制中心位置，标准差控制分散宽度；标准差必须大于 0。"),
                 ("若两个 latent 状态先验各为 0.5，生成 x 的概率分别为 0.2 和 0.8，求 p(x)。", r"\(p(x)=0.2\times0.5+0.8\times0.5=0.5\)。"),
-                ("为什么采样代码先生成 epsilon，再乘 sigma、加 mu？", "标准正态容易采样；仿射变换把它移动并缩放成目标 Gaussian，同时为后续重参数化铺路。"),
+                ("补全采样代码 `epsilon = randn_like(mu); z = ____`，并说明 `epsilon` 必须满足什么 shape 条件。", "应填 `mu + sigma * epsilon`。`epsilon` 应与 `mu`、`sigma` 同 shape，或至少能按预期广播；对应公式为 `z = mu + sigma * epsilon`。"),
                 ("保持 mu 不变，逐步增大 sigma。观察曲线峰值和样本范围，并解释为什么总面积仍接近 1。", "分布变宽时峰值下降，因为相同总概率被摊到更宽区间；归一化常数随 sigma 调整，使总面积保持 1。"),
             ),
         ],

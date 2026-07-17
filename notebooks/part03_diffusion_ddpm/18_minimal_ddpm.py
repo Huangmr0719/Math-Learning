@@ -63,7 +63,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     前四章已经分别得到：
 
@@ -82,7 +82,7 @@ def _(mo):
     \rightarrow \text{从 Gaussian 逐步反向采样}.
     \]
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     \[
     x_t=\sqrt{\bar\alpha_t}x_0+
@@ -131,7 +131,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–5. 最小 DDPM 完整数据流"),
+            mo.md("## 最小 DDPM 完整数据流"),
             derivation_map(
                 [
                     "采样干净 x0",
@@ -368,7 +368,7 @@ def _(
 
     mo.vstack(
         [
-            mo.md("## 7. 交互实验：显式训练与 reverse trajectory"),
+            mo.md("## 交互实验：显式训练与 reverse trajectory"),
             _controls,
             _view,
         ]
@@ -379,7 +379,7 @@ def _(
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 教学版训练代码
+    ## 教学版训练代码
 
     ```python
     # 1. 每个 batch 样本独立选择时间。
@@ -467,7 +467,7 @@ def _(
 
     mo.md(
         fr"""
-        ## 6、9. 未训练模型的 shape 与数值烟测
+        ## 未训练模型的 shape 与数值烟测
 
         - x0 shape：`{tuple(_x0.shape)}`
         - t shape：`{tuple(_t.shape)}`
@@ -486,7 +486,7 @@ def _(
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 10. 错误与反例
+    ## 错误与反例
 
     1. **打开 notebook 就自动训练。**
        会破坏可复现和轻量原则；本章只在点击按钮后运行。
@@ -515,7 +515,7 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 (
                     "从 x0 到 loss，用一句话串起训练链路。",
@@ -526,8 +526,8 @@ def _(exercise_block, mo):
                     "`[128, 2]`；它必须与真实 epsilon 完全一致，才能逐元素计算误差。",
                 ),
                 (
-                    "为什么 reverse sampling 的 `if t > 0` 不能删除？",
-                    "t=0 时理论 posterior variance 为 0；继续注入噪声会破坏最终生成结果。",
+                    "把 reverse sampling 最后一步也执行 `x = mean + std * z` 会怎样？请给出正确的条件分支。",
+                    "在本章的零基代码索引中，`t=0` 是生成 `x_0` 的最后更新，应写 `x = mean + std * z if t > 0 else mean`。最后一步继续加入随机噪声会污染输出；这里的边界结论依赖本章索引约定，不能把代码的 `t=0` 与论文的一基 `t=1` 混用。",
                 ),
                 (
                     "比较 300 与 1200 updates，并观察 loss 和八团结构。哪些变化才算真正改进？",

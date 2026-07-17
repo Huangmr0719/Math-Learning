@@ -28,7 +28,7 @@ def _(CHAPTERS,chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     CNF 最大似然训练需要计算 divergence。Flow Matching 选择一族已知的
     **条件概率路径**（conditional probability path），直接回归每条条件路径的速度：
@@ -36,7 +36,7 @@ def _(mo):
     L_{\rm CFM}=E_{t,x_0,x_1}\|v_\theta(x_t,t)-u_t(x_t|x_0,x_1)\|^2.
     \]
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 27 章：velocity field 决定分布运输。
     - 第 4 章：期望是按概率加权的平均数。
@@ -72,7 +72,7 @@ def _(intuition_and_rigor):
 def _(derivation_map,mo):
     mo.vstack(
         [
-            mo.md("## 3–6. Conditional path 如何产生 marginal field"),
+            mo.md("## Conditional path 如何产生 marginal field"),
             derivation_map(["采样 source x0","采样 target x1","采样时间 t","构造 conditional xt","计算已知 conditional velocity","MSE 回归","条件期望得到 marginal velocity"]),
             mo.md(r"""
             最简单线性插值：
@@ -176,7 +176,7 @@ def _(COLORS,flow_t,mo,np,plt,sample_pair):
     _axes[0].set_aspect("equal")
     _axes[1].plot(np.linspace(0,1,20),np.tile(np.linalg.norm(_u[_i]),20),color=COLORS["prior"]);_axes[1].set_title(f"pair {_i} speed magnitude")
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. 条件路径动画帧
+    mo.vstack([mo.md(fr"""## 条件路径动画帧
 
     pair {_i}: \(x_t={_xt[_i]}\)，conditional velocity={_u[_i]}。
     拖动 t 观察粒子沿直线移动；速度不随 t 变是线性 path 的特性。"""),mo.hstack([flow_t,sample_pair],widths="equal"),_fig])
@@ -186,7 +186,7 @@ def _(COLORS,flow_t,mo,np,plt,sample_pair):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 训练代码
+    ## 训练代码
 
     ```python
     x0 = sample_source(batch_size)       # [B,D]
@@ -198,7 +198,7 @@ def _(mo):
     loss = F.mse_loss(prediction, target_velocity)
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - 把样本速度 \(x_1-x_0\) 与 marginal velocity 当作处处相同。
     - 把 DDPM 的 \(x_0=\) 数据记号直接搬来：本章 \(x_0\) 是 source noise。
@@ -214,11 +214,11 @@ def _(mo):
 def _(exercise_block,mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("为什么最优模型是条件平均速度？","固定 xt,t 后，期望平方误差可分解为不可约条件方差，加上预测与条件平均之差的平方；后者在预测等于条件平均时为 0。"),
                 ("x0=-2、x1=3、t=.4，xt 和速度？","xt=0，速度=5。"),
-                ("t 为什么 reshape 为 [B,1]？","让每个样本的标量时间沿 D 个 feature 广播。"),
+                ("已知 `x0,x1: [B,D]`、`t: [B]`，写出线性路径 `x_t` 的 broadcasting 安全实现并检查 shape。","写 `t_column = t[:, None]`，再写 `x_t = (1 - t_column) * x0 + t_column * x1`，并检查 `assert x_t.shape == x0.shape == x1.shape`。`[B,1]` 让每个样本的标量时间只沿 D 个 feature 广播。"),
                 ("改变 pair 与 t，比较位置和速度。","线性 path 中位置随 t 变，单对样本速度保持不变。"),
             ),
         ],

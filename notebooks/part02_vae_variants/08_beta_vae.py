@@ -29,7 +29,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     标准 VAE 把 reconstruction 与 KL 直接相加，但这两个目标会竞争：前者希望
     latent 保存尽可能多的样本细节，后者希望 posterior 靠近统一 prior。
@@ -39,7 +39,7 @@ def _(mo):
     L_\beta=L_{\mathrm{recon}}+\beta D_{KL}(q_\phi(z|x)\|p(z)).
     \]
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 7 章：标准 VAE 对应 \(\beta=1\)。
     - KL 小表示 posterior 接近 prior，但不等于表示一定“有意义”。
@@ -66,7 +66,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–6. 数学暂停站：加权多目标"),
+            mo.md("## 数学暂停站：加权多目标"),
             derivation_map(["标准 negative ELBO", "给 KL 乘 beta", "beta 改变梯度比例", "posterior 容量改变", "观察重构—规整折中"]),
             mo.md(r"""
             对参数 \(\theta,\phi\)：
@@ -134,7 +134,7 @@ def _(COLORS, beta, capacity, mo, np, plt):
     _axes[1].bar(["recon", "beta × KL"], [_current_recon, beta.value * _current_kl], color=[COLORS["data"], COLORS["prior"]])
     _axes[1].set_title(f"total={_current_recon + beta.value * _current_kl:.3f}")
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. 交互验证
+    mo.vstack([mo.md(fr"""## 交互验证
 
     当前 reconstruction={_current_recon:.3f}，KL={_current_kl:.3f}，
     \(L_\beta={_current_recon + beta.value * _current_kl:.3f}\)。
@@ -146,7 +146,7 @@ def _(COLORS, beta, capacity, mo, np, plt):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 代码与公式
+    ## 代码与公式
 
     ```python
     # recon_loss、kl_loss 都是“每个样本平均”的标量。
@@ -158,7 +158,7 @@ def _(mo):
     此时仍可能保留随机采样，但已经失去把 posterior 对齐 prior 的依据；
     beta 很大时模型可能牺牲重构，甚至进入下一章的 posterior collapse。
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - 把 beta 越大等同于表示越好：没有这种单调保证。
     - 比较不同 beta 却改变 reduction：实验不公平。
@@ -173,11 +173,11 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("beta 控制什么？", "它控制 KL 梯度相对 reconstruction 梯度的权重，从而改变信息保存与 prior 规整的折中。"),
                 ("recon=30、KL=2，beta=4 时 total 是多少？", "30+4×2=38。"),
-                ("如何记录一次 beta 消融？", "固定数据、seed、架构和 reduction，分别记录 total、recon、KL、重构与 prior 采样。"),
+                ("写出 beta 消融循环的核心伪代码：遍历 `[0.1,1,4]` 时，哪些设置必须固定，哪些指标必须分别保存？", "固定数据划分、seed、架构、训练预算和 loss reduction；对每个 beta 重新训练并保存 total、recon、未加权 KL、重构样本和 prior 采样。不能只比较 `beta * KL`，因为其尺度已被 beta 改变。"),
                 ("拖动 beta，观察 toy total 最小点如何移动。", "beta 增大时最优容量向更小方向移动；真实模型还受容量和优化影响。"),
             ),
         ],

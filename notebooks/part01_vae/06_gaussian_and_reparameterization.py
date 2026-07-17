@@ -26,7 +26,6 @@ def _():
         COLORS,
         chapter_footer,
         chapter_header,
-        course_styles,
         derivation_map,
         exercise_block,
         finite_difference_gradient,
@@ -47,7 +46,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     ELBO 要计算 \(q_\phi(z\mid x)\) 下的期望，实际训练会从该分布采样。
     但普通“从某个分布随机抽一个数”的操作看起来无法对分布参数求导。
@@ -61,11 +60,34 @@ def _(mo):
 
     随机源 \(\epsilon\) 不依赖 encoder 参数；\(z\) 对 \(\mu,\sigma\) 则是普通可微运算。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - Gaussian 的均值控制中心，标准差控制宽度；
     - ELBO 需要在 \(q_\phi(z\mid x)\) 下取期望；
     - 链式法则描述复合函数的梯度传播。
+
+    本质是将采样过程中的“随机性”和“网络参数”剥离开来。
+    - 隔离随机性：我们不再直接从带有参数 $\mu$ 和 $\sigma$ 的分布中采样，而是从一个标准且无参数的正态分布 $\mathcal{N}(0, I)$ 中采样出一个纯粹的噪声向量 $\epsilon$。
+    - 仿射变换：然后，我们将这个随机噪声 $\epsilon$ 作为已知输入，通过一个确定性的线性方程 $z = \mu + \text{diag}(\sigma)\epsilon$ 来构造 $z$。（在 PyTorch 等框架的实际代码中，$\text{diag}(\sigma)\epsilon$ 通常被写成逐元素相乘 $\sigma \odot \epsilon$）。
+
+    一个标准正态分布的随机变量乘以 $\sigma$ 再加上 $\mu$，其结果必然服从 $\mathcal{N}(\mu, \sigma^2)$。因此，这种构造方式在数学上完美等价于直接从原分布中采样。
+
+    在神经网络的一次前向传播（Forward Pass）中，一旦 $\epsilon$ 被采样出来，它对于本次计算图来说就是一个固定的常数（固定 $\epsilon$）。
+    此时，审视方程 $z = \mu + \text{diag}(\sigma)\epsilon$：在这个方程中，$z$ 已经不再是一个随机变量，而是参数 $\mu$ 和 $\sigma$ 的确定性连续函数。既然是确定性函数，我们就可以对其直接求偏导：
+
+    对 $\mu$ 求偏导：$\frac{\partial z}{\partial \mu} = I$ （$I$ 是单位矩阵，意味着每个维度是独立的，$\frac{\partial z_i}{\partial \mu_i} = 1$）。
+
+    对 $\sigma$ 求偏导：$\frac{\partial z}{\partial \sigma} = \text{diag}(\epsilon)$ （同理，在标量层面 $\frac{\partial z_i}{\partial \sigma_i} = \epsilon_i$）。
+
+    链式法则的完美运行：假设解码器计算出的最终损失为 $\mathcal{L}$，并且通过反向传播已经算出了 $\mathcal{L}$ 对隐变量 $z$ 的梯度 $\frac{\partial \mathcal{L}}{\partial z}$。
+    现在，梯度可以畅通无阻地继续向前传播给编码器的输出了：
+    $$
+    \frac{\partial \mathcal{L}}{\partial \mu} = \frac{\partial \mathcal{L}}{\partial z} \frac{\partial z}{\partial \mu} = \frac{\partial \mathcal{L}}{\partial z} \cdot I
+    $$
+
+    $$
+    \frac{\partial \mathcal{L}}{\partial \sigma} = \frac{\partial \mathcal{L}}{\partial z} \frac{\partial z}{\partial \sigma} = \frac{\partial \mathcal{L}}{\partial z} \cdot \text{diag}(\epsilon)
+    $$
     """)
     return
 
@@ -95,7 +117,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–5. Gaussian KL 与重参数化地图"),
+            mo.md("## Gaussian KL 与重参数化地图"),
             derivation_map(["encoder 输出 mu 与 logvar", "由 logvar 得到 std", "采样固定标准噪声 epsilon", "构造 z", "解析计算 KL(q||N(0,I))"]),
         ],
         gap=0.8,
@@ -182,7 +204,7 @@ def _(
         [
             mo.md(
                 fr"""
-                ## 7、9. 交互与 Monte Carlo 验证
+                ## 交互与 Monte Carlo 验证
 
                 - variance \(=\exp(\text{{logvar}})={_variance:.4f}\)
                 - std \(=\exp(0.5\,\text{{logvar}})={_std:.4f}\)
@@ -218,7 +240,7 @@ def _(finite_difference_gradient, mo, np):
     _analytic_gradient = np.array([2 * _z, _z * _std * _epsilon_fixed])
     mo.md(
         fr"""
-        ## 8. 梯度验证与逐行代码
+        ## 梯度验证与逐行代码
 
         ```python
         # logvar = log(sigma^2)，乘 0.5 后再 exp 得到 sigma。
@@ -246,7 +268,7 @@ def _(finite_difference_gradient, mo, np):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 10. 错误与反例
+    ## 错误与反例
 
     1. **把 logvar 当作标准差。**
        若 `logvar=-2`，正确标准差是 `exp(-1)`，不是 `-2`。标准差不能为负。
@@ -264,11 +286,11 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("重参数化究竟把随机性从哪里移动到了哪里？", "从“直接由带参数分布采样 z”移动到固定标准分布 epsilon；mu 和 sigma 只参与普通可微变换。"),
                 (r"若 logvar=0，variance 和 std 分别是多少？", r"variance \(=e^0=1\)，std \(=e^{0/2}=1\)。"),
-                ("解释 `torch.sum(..., dim=-1).mean()` 的两个 reduction。", "先沿最后一个 latent 维度为每个样本求 KL，再沿 batch 对样本取平均，最终得到标量。"),
+                ("已知逐元素 KL `kl_elementwise` shape 为 `[B,D]`，写一行 PyTorch 得到 batch 平均的标量 KL，并标注两个 reduction 轴。", "`kl_loss = kl_elementwise.sum(dim=-1).mean(dim=0)`。先沿 latent 轴 `D` 为每个样本求和，得到 `[B]`；再沿 batch 轴取平均，得到标量。"),
                 ("固定 logvar=0，改变 mu；再固定 mu=0，改变 logvar。比较两种偏离 prior 的方式。", "mu 偏离 0 会产生二次惩罚；logvar 偏离 0 表示方差偏离 1，两边都会增加 KL，但曲线并不对称。"),
             ),
         ],

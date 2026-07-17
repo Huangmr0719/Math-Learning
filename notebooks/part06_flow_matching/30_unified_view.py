@@ -27,7 +27,7 @@ def _(CHAPTERS,chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     学完许多模型后，最危险的状态是只记住名称。本章用同一组问题比较：
 
@@ -37,7 +37,7 @@ def _(mo):
     4. 生成时需要几次网络调用？
     5. likelihood、重构与可控性如何获得？
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - VAE：一次 latent sampling + decoder。
     - Diffusion：逐步逆转已知 noising path。
@@ -64,7 +64,7 @@ def _(intuition_and_rigor):
 def _(derivation_map,mo):
     mo.vstack(
         [
-            mo.md("## 3–6. 统一坐标系"),
+            mo.md("## 统一坐标系"),
             derivation_map(["选择简单 base noise","定义连接数据的中间结构","构造可训练局部目标","学习 decoder/score/velocity","数值或一次映射生成","用失败模式诊断"]),
             mo.md(r"""
             | 维度 | VAE | DDPM/DDIM | Flow Matching |
@@ -121,7 +121,7 @@ def _(COLORS,compute,mo,np,plt,priority):
     for _i,_name in enumerate(_names):_axes[1].text(_cost[_i]+.1,_scores[_i],_name)
     _axes[1].axvline(compute.value,linestyle="--",color=COLORS["danger"]);_axes[1].set_xlabel("toy sampling cost")
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. 模型选择不是排行榜
+    mo.vstack([mo.md(fr"""## 模型选择不是排行榜
 
     当前 toy 规则推荐 **{_names[_best]}**。这只是迫使我们明确任务与预算；
     真实选择还需要数据规模、条件类型、likelihood、编辑能力和现有生态证据。"""),mo.hstack([priority,compute],widths="equal"),_fig])
@@ -131,7 +131,7 @@ def _(COLORS,compute,mo,np,plt,priority):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 从研究问题反推模型
+    ## 从研究问题反推模型
 
     ```python
     def choose_family(requirements):
@@ -143,7 +143,7 @@ def _(mo):
         # 随后用小规模基线验证，而不是仅凭流行度选择。
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - “新模型统一旧模型”就认为旧模型无价值：结构目标不同。
     - 只比较 FID，不比较采样成本、重构、覆盖率与条件一致性。
@@ -164,11 +164,11 @@ def _(mo):
 def _(exercise_block,mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层综合练习"),
+            mo.md("## 分层综合练习"),
             exercise_block(
                 ("三类模型共同做什么？","把简单随机源通过可学习概率结构转换为目标数据分布。"),
                 ("一次 VAE decoder 与 50 步 sampler，网络调用量大致差多少？","若各步一次网络调用，约 1 次对 50 次；实际模型大小仍不同。"),
-                ("给每类模型写一个最关键 shape 检查。","VAE 检查 mu/logvar；Diffusion 检查 xt/epsilon；Flow 检查 state/velocity 均同 shape。"),
+                ("给 VAE、Diffusion、Flow 三类模型各写一个最关键的 `assert` shape 断言。","可写 `assert mu.shape == logvar.shape`；`assert x_t.shape == epsilon.shape == pred.shape`；`assert state.shape == velocity.shape`。前两者分别保护逐 latent 维的 Gaussian 参数和逐元素噪声损失，最后一个保护 ODE 状态更新。"),
                 ("为自己的研究写需求表再选择模型。","至少比较表示需求、条件控制、采样预算、likelihood、数据规模和失败诊断，不设唯一答案。"),
             ),
         ],

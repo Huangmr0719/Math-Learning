@@ -54,7 +54,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     第 14 章的 forward chain 必须从 \(x_0\) 依次计算
     \(x_1,x_2,\ldots,x_t\)。如果训练网络时随机抽到 \(t=800\)，难道每个 batch
@@ -68,7 +68,7 @@ def _(mo):
     \sqrt{1-\bar\alpha_t}\epsilon.
     \]
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 14 章：\(\alpha_t=1-\beta_t\) 表示一步保留比例。
     - 独立随机变量相加时，均值相加；方差按系数平方后相加。
@@ -115,7 +115,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–5. 两步展开，再推广到任意 t"),
+            mo.md("## 两步展开，再推广到任意 t"),
             derivation_map(
                 [
                     "写出 x1",
@@ -241,7 +241,7 @@ def _(
         [
             mo.md(
                 fr"""
-                ## 7. 交互实验：不要混淆 alpha 与 alpha_bar
+                ## 交互实验：不要混淆 alpha 与 alpha_bar
 
                 当前：
 
@@ -276,7 +276,7 @@ def _(diffusion_coefficients, mo, np, q_sample_from_x0):
 
     mo.md(
         fr"""
-        ## 6、9. 采样矩与理论矩验证
+        ## 采样矩与理论矩验证
 
         固定 \(x_0={_x0_scalar}\)、\(t=60\)，采样 100,000 次：
 
@@ -288,7 +288,7 @@ def _(diffusion_coefficients, mo, np, q_sample_from_x0):
         采样统计接近理论值，支持闭式采样实现正确；公式本身由线性 Gaussian
         的均值、方差递推证明。
 
-        ## 8. 公式到 batch 代码
+        ## 公式到 batch 代码
 
         ```python
         # alpha_bars shape: [T]；t shape: [batch]。
@@ -314,7 +314,7 @@ def _(diffusion_coefficients, mo, np, q_sample_from_x0):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 10. 错误与反例
+    ## 错误与反例
 
     1. **用 \(\alpha_t\) 代替 \(\bar\alpha_t\)。**
        后期的单步 \(\alpha_t\) 仍接近 1，但累计信号可能已经很小；错误代码会让 \(x_t\) 过于清晰。
@@ -336,7 +336,7 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 (
                     "alpha_t 与 alpha_bar_t 分别回答什么问题？",
@@ -347,8 +347,8 @@ def _(exercise_block, mo):
                     r"\(\bar\alpha_2=0.72\)，所以 \(q(x_2|x_0)\) 的噪声方差是 \(1-0.72=0.28\)。",
                 ),
                 (
-                    "为什么 `gather` 后还需要 reshape？",
-                    "gather 只得到每个样本的标量系数 `[B]`；reshape 明确让它沿 channel、height、width 广播。",
+                    "已知 `values: [T]`、`t: [B]`、`x: [B,C,H,W]`，写出 gather 后可与 `x` 正确广播的系数 shape 变换。",
+                    "`coef = values.gather(0, t).reshape(B, 1, 1, 1)`，得到 `[B,1,1,1]`。它只沿 channel、height、width 广播，不会让不同 batch 样本之间发生错误广播。",
                 ),
                 (
                     "增大 beta_end 后，固定 t 的点云如何变化？先预测再拖动。",

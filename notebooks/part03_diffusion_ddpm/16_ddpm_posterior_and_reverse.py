@@ -57,7 +57,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     Forward process 告诉我们怎样从清晰数据走向噪声，但生成需要反过来：
 
@@ -74,7 +74,7 @@ def _(mo):
     q(x_{t-1}\mid x_t,x_0).
     \]
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 3 章：Bayes rule 把 prior 与 likelihood 相乘得到 posterior。
     - 第 15 章：\(q(x_{t-1}\mid x_0)\) 有闭式 Gaussian。
@@ -113,7 +113,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–5. Gaussian conditioning 推导地图"),
+            mo.md("## Gaussian conditioning 推导地图"),
             derivation_map(
                 [
                     "写 Bayes 比例式",
@@ -334,7 +334,7 @@ def _(
         [
             mo.md(
                 fr"""
-                ## 7、9. 交互与数值验证
+                ## 交互与数值验证
 
                 - posterior mean：\(\tilde\mu_t={_mean[0]:.5f}\)
                 - posterior variance：\(\tilde\beta_t={_variance:.6f}\)
@@ -356,7 +356,7 @@ def _(
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 公式到代码
+    ## 公式到代码
 
     ```python
     # denominator 是 1 - alpha_bar_t；shape 可广播到 x0。
@@ -402,7 +402,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 10. 错误与反例
+    ## 错误与反例
 
     1. **生成时把时间从小到大循环。**
        Forward 是 \(0\to T\)，reverse sampling 必须是 \(T\to0\)。
@@ -427,7 +427,7 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 (
                     "posterior mean 为什么同时包含 x0 和 xt？",
@@ -438,8 +438,8 @@ def _(exercise_block, mo):
                     r"因为 \(\bar\alpha_0=1\)，分子包含 \(1-\bar\alpha_0=0\)。给定 x0 时，x0 本身没有不确定性。",
                 ),
                 (
-                    "若 reverse loop 写成 `for t in range(T)`，逻辑错误是什么？",
-                    "它从接近数据的一端继续走向噪声，而不是从 xT 逐步恢复 x0。",
+                    "若从 `x = x_T` 开始，却把 reverse loop 写成 `for t in range(T)`，逻辑错误是什么？",
+                    "状态从 `x_T` 开始，却先使用低噪声端的系数，时间索引与当前状态不匹配，而且总体索引方向仍在增大。正确循环应从 `T-1` 倒序到 `0`，逐步恢复 `x_0`。",
                 ),
                 (
                     "移动 xt，观察 posterior mean。它是否简单等于 x0 与 xt 的算术平均？",

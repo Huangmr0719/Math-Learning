@@ -28,7 +28,7 @@ def _(CHAPTERS,chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     DDPM 使用离散 t。把步长缩小到连续极限，可用 stochastic differential equation：
     \[
@@ -36,7 +36,7 @@ def _(mo):
     \]
     更惊人的是，存在一个确定性 probability flow ODE，拥有相同时间边缘分布。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 17 章：score 是 \(\nabla_x\log p_t(x)\)。
     - 第 25 章：ODE 给每个状态确定速度。
@@ -72,7 +72,7 @@ def _(intuition_and_rigor):
 def _(derivation_map,mo):
     mo.vstack(
         [
-            mo.md("## 3–6. ODE、SDE 与密度演化"),
+            mo.md("## ODE、SDE 与密度演化"),
             derivation_map(["离散 Gaussian 增量","dt→0 得 Brownian noise","Fokker–Planck 描述密度","reverse drift 加 score","将扩散项改写为密度相关 drift","得到 probability flow ODE"]),
             mo.md(r"""
             Brownian increment \(dW\) 的标准差是 \(\sqrt{dt}\)，不是 dt。
@@ -122,7 +122,7 @@ def _(COLORS,mo,ornstein_uhlenbeck_variance,particles,plt,simulate_ornstein_uhle
     _axes[0].hist(_x,bins=35,density=True,color=COLORS["data"],alpha=.6);_axes[0].set_title("SDE particle marginal")
     _axes[1].plot(_t,_vars,color=COLORS["model"],label="sample variance");_axes[1].plot(_t,_theory, "--",color=COLORS["success"],label="OU theory")
     _axes[1].legend(fontsize=8);_fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. Euler–Maruyama 验证
+    mo.vstack([mo.md(fr"""## Euler–Maruyama 验证
 
     我们验证的是
     \(dX_t=-0.5X_tdt+g\,dW_t,\ X_0=0\)。它的理论方差为
@@ -141,7 +141,7 @@ def _(COLORS,mo,ornstein_uhlenbeck_variance,particles,plt,simulate_ornstein_uhle
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 代码
+    ## 代码
 
     ```python
     # x、drift、随机噪声 shape 相同，例如 [particles] 或 [B,C,H,W]。
@@ -153,7 +153,7 @@ def _(mo):
     x = ode_solver_step(x, velocity, dt)
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - 漏写更新式开头的 `x +`：每一步都近似重新生成状态，不再模拟原 SDE。
     - 把 Brownian 增量写成 dt：应为标准差 sqrt(dt)。
@@ -169,11 +169,11 @@ def _(mo):
 def _(exercise_block,mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("ODE 与 SDE 的路径差别？","ODE 给定初值后确定，SDE 还受 Brownian 随机增量影响。"),
-                ("dt=.01，Brownian increment 标准差？","sqrt(.01)=.1。"),
-                ("为何 probability flow ODE 仍需 score？","它用 score 把 SDE 的扩散效应改写为确定性密度运输 drift。"),
+                ("对标准 Brownian motion，dt=.01 时 `Delta W` 的标准差是多少？","标准增量满足 `Delta W ~ N(0, dt)`，所以标准差是 `sqrt(.01)=.1`。若问的是 SDE 状态中的噪声增量 `g(t)*Delta W`，其标准差还要乘 `|g(t)|`。"),
+                ("对 forward-time Itô SDE `dX=f(X,t)dt+g(t)dW`，补全 probability flow ODE：`velocity = f(x,t) - ____`。","填 `0.5 * g(t)**2 * score(x,t)`。score 是 `∇_x log p_t(x)`；数值上反向生成还必须通过积分区间或负步长明确处理时间方向，不能再随意额外翻转符号。"),
                 ("减小 particles，观察方差曲线。","Monte Carlo 抖动增大，但理论趋势不变。"),
             ),
         ],

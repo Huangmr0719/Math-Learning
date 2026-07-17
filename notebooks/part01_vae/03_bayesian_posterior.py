@@ -44,7 +44,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     生成模型沿着 \(z\rightarrow x\) 工作：先选 latent 原因，再得到观测结果。
     训练 encoder 时却要解决相反问题：已经看见 \(x\)，怎样反推 \(z\)？
@@ -52,7 +52,7 @@ def _(mo):
     例如，两台机器都会生产红球，但比例不同。你拿到一个红球后，应该怎样判断它更可能来自哪台机器？
     这就是 posterior inference。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - prior \(p(z)\)：观察数据之前，对 latent 原因的看法；
     - likelihood \(p(x\mid z)\)：给定原因后，看到结果的可能性；
@@ -93,7 +93,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–5. Bayes rule 推导地图"),
+            mo.md("## Bayes rule 推导地图"),
             derivation_map(["写出联合概率", "用两种顺序分解联合概率", "令两式相等", "除以 evidence p(x)", "得到 posterior"]),
         ],
         gap=0.8,
@@ -170,7 +170,7 @@ def _(COLORS, mo, np, plt, prior_b, red_a, red_b):
         [
             mo.md(
                 fr"""
-                ## 7. 交互实验：证据如何修改 prior
+                ## 交互实验：证据如何修改 prior
 
                 当前 \(p(B\mid R)={_posterior[1]:.3f}\)，
                 \(p(A\mid R)={_posterior[0]:.3f}\)，两者之和为 **{_posterior.sum():.3f}**。
@@ -186,7 +186,7 @@ def _(COLORS, mo, np, plt, prior_b, red_a, red_b):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 6、8–10. 检查、代码映射和反例
+    ## 检查、代码映射和反例
 
     ```python
     # joint_b 对应 p(R, B) = p(R | B) p(B)
@@ -214,11 +214,11 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("用一句话区分 prior、likelihood 和 posterior。", "Prior 是看数据前对原因的看法；likelihood 是给定原因后证据出现的可能性；posterior 是看见证据后更新的原因概率。"),
                 ("若 p(A)=p(B)=0.5，p(R|A)=0.2，p(R|B)=0.8，求 p(B|R)。", r"\(p(R)=0.2\times0.5+0.8\times0.5=0.5\)，所以 \(p(B|R)=0.4/0.5=0.8\)。"),
-                ("代码中为什么必须先计算 evidence？", "它把所有 joint probability 归一化，使 posterior 总和为 1；也对应 Bayes rule 的分母 p(x)。"),
+                ("已知 `joint = prior * likelihood`，补全 `evidence = ____` 与 `posterior = ____`，再写一个归一化断言。", "`evidence = joint.sum()`，`posterior = joint / evidence`，并检查 `assert np.isclose(posterior.sum(), 1.0)`。这里要求 `evidence > 0`；它对应 Bayes rule 的分母。"),
                 ("让 B 的 likelihood 很高但 prior 很低，观察 posterior。解释哪一个因素最终占主导。", "没有固定答案；posterior 由 prior 与 likelihood 的乘积共同决定，应比较两台机器的 joint weight，而不是单独看其中一个量。"),
             ),
         ],

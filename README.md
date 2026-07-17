@@ -1,20 +1,21 @@
-# Math-Learning：从 VAE 到 Flow Matching
+# Math-Learning：从变分自编码器（VAE）到流匹配（Flow Matching）
 
-一套面向高中数学基础学习者的生成模型交互式课程。课程使用中文讲解，
-保留常用英文术语和原始数学符号，并以 marimo notebook 作为唯一维护的教学正文。
+一套面向高中数学基础学习者的生成模型交互式课程。课程正文使用中文，
+专业术语第一次出现时给出通用中文译名、英文原词和简明解释；公式、代码变量、
+常用缩写与论文标题保留英文。marimo notebook 是唯一维护的教学正文。
 
 ## 学习主线
 
 ```text
-Autoencoder 与 latent representation
+自编码器与潜在表示（Autoencoder / latent representation）
 → VAE 概率建模
 → VAE 变体
-→ Diffusion / DDPM
+→ 扩散模型 / DDPM
 → DDIM
-→ Diffusion 变体与连续时间视角
-→ Continuous Normalizing Flow
-→ Flow Matching
-→ Optimal Transport 与 Rectified Flow
+→ 扩散模型变体与连续时间视角
+→ 连续归一化流（CNF）
+→ 流匹配（Flow Matching）
+→ 最优传输（OT）与 Rectified Flow
 ```
 
 数学不被集中堆放在课程开头。每章遵循同一条学习循环：
@@ -24,7 +25,7 @@ Autoencoder 与 latent representation
 → 发现当前缺少的数学工具
 → 从直觉、数字和图形建立理解
 → 给出严格定义与推导
-→ 对照代码和 tensor shape
+→ 对照代码和张量形状（tensor shape）
 → 数值验证与交互可视化
 → 错误案例与分层练习
 → 引出下一章
@@ -60,8 +61,8 @@ marimo edit notebooks
 `marimo edit notebooks/00_home.py`；不过目录工作区更方便浏览全部章节。
 
 第一次学习建议从第 1 章开始。首页提供六个部分的课程地图、章节状态、
-统一符号索引和跨模型符号切换说明。章节链接会在新标签页中打开，以便保留
-课程地图。
+统一符号索引、专业术语中英对照和跨模型符号切换说明。每章正文开始前还会
+显示该章首次引入的术语。章节链接会在新标签页中打开，以便保留课程地图。
 
 ## 目录结构
 
@@ -92,7 +93,7 @@ Math-Learning/
 │
 ├── references/
 │   ├── papers/                  # 本地论文与教程，按主题归档
-│   ├── guides/                  # 数学审查清单和背景路线
+│   ├── guides/                  # 数学审查清单、术语规范和背景路线
 │   └── reading-list.md          # 权威链接与阅读说明
 │
 ├── docs/
@@ -123,6 +124,7 @@ Math-Learning/
 
 本地论文目录见 [references/README.md](references/README.md)。课程章节中的公式应以
 原始论文、严格推导和可执行验证共同核对，不能仅依据旧笔记或单次数值实验。
+术语翻译规则见 [references/guides/terminology.md](references/guides/terminology.md)。
 
 ## 验证
 

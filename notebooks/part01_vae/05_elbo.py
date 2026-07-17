@@ -46,7 +46,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     理想目标是让训练数据拥有高概率，即最大化 \(\log p_\theta(x)\)。
     但第 3 章已经看到：
@@ -61,7 +61,7 @@ def _(mo):
     - 永远不超过 \(\log p_\theta(x)\)；
     - 越接近它越好的下界。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - Bayes rule；
     - KL divergence 非负；
@@ -99,7 +99,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–5. ELBO 推导地图"),
+            mo.md("## ELBO 推导地图"),
             derivation_map(["从 posterior KL 出发", "展开对数比", "代入 Bayes rule", "把 log p(x) 移出期望", "整理成 log evidence = ELBO + gap"]),
         ],
         gap=0.8,
@@ -195,7 +195,7 @@ def _(COLORS, kl_discrete, mo, np, plt, q_z1):
         [
             mo.md(
                 fr"""
-                ## 7、9. 交互验证：让 q 靠近真实 posterior
+                ## 交互验证：让 q 靠近真实 posterior
 
                 这个二元 latent 模型可精确计算：
 
@@ -218,7 +218,7 @@ def _(COLORS, kl_discrete, mo, np, plt, q_z1):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 6、8、10. 检查、代码映射与错误案例
+    ## 检查、代码映射与错误案例
 
     ```python
     # q 的 shape 是 [num_latent_states]。
@@ -251,11 +251,11 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("为什么 ELBO 是下界？", "因为 log p(x) 等于 ELBO 加上一个非负的 posterior KL，所以 ELBO 不可能超过 log p(x)。"),
                 ("若 log p(x)=-1.2，posterior KL=0.3，ELBO 是多少？", r"由恒等式得 ELBO \(=-1.2-0.3=-1.5\)。"),
-                ("训练代码为什么通常写 reconstruction_loss + kl_loss？", "代码执行最小化，因此使用负 ELBO；负的 expected log likelihood 成为 reconstruction loss，减 KL 变为加正 KL。"),
+                ("补全最小化目标：`negative_elbo = ____ + ____`，并写出两项各自对应的数学量。", "填写 `reconstruction_loss + kl_loss`。其中 `reconstruction_loss = -E_q[log p(x|z)]`，`kl_loss = KL(q(z|x)||p(z))`，所以二者之和是负 ELBO。"),
                 ("拖动 q，找出 ELBO 最大的位置，并与真实 posterior 比较。", "ELBO 在 q 等于真实 posterior 时达到 log evidence；滑块离开该位置时 posterior KL gap 增大。"),
             ),
         ],

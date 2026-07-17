@@ -27,7 +27,7 @@ def _(CHAPTERS,chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     512×512 RGB 图像有 786,432 个数。在像素空间每步运行大型去噪网络代价很高。
     Latent Diffusion 先用 autoencoder 压缩：
@@ -35,7 +35,7 @@ def _(mo):
     x\xrightarrow{E}z,\quad \text{diffusion in }z,\quad z_0\xrightarrow{D}\hat x.
     \]
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - VAE/VQ-VAE 可把图像压到 latent。
     - DDPM 可在任意连续张量空间加噪。
@@ -61,7 +61,7 @@ def _(intuition_and_rigor):
 def _(derivation_map,mo):
     mo.vstack(
         [
-            mo.md("## 3–6. 压缩率与感知失真"),
+            mo.md("## 压缩率与感知失真"),
             derivation_map(["图像编码为 z0","在 z 上训练 forward/noise prediction","从 Gaussian 采样 zT","latent reverse sampling","decoder 还原图像"]),
             mo.md(r"""
             压缩率不是只有文件大小：
@@ -117,7 +117,7 @@ def _(COLORS,factor,latent_channels,mo,np,plt):
     _axes[0].set_ylabel("latent scalars / pixel scalars")
     _axes[1].plot(_f,_distortion,color=COLORS["model"]);_axes[1].set_title("toy compression distortion")
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. 算力—失真权衡
+    mo.vstack([mo.md(fr"""## 算力—失真权衡
 
     512×512 输入标量数={_pixel:,}；当前 latent 标量数={_latent:,}；
     比例={_ratio:.4f}。真实显存/算力还受网络宽度与 attention 影响。"""),mo.hstack([factor,latent_channels],widths="equal"),_fig])
@@ -127,7 +127,7 @@ def _(COLORS,factor,latent_channels,mo,np,plt):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 数据流代码
+    ## 数据流代码
 
     ```python
     with torch.no_grad():
@@ -140,7 +140,7 @@ def _(mo):
     images = autoencoder.decode(z0_generated / latent_scale)
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - 忘记 latent scale：schedule 的信噪比不再符合设计。
     - 把 autoencoder 重构误差归咎于 diffusion。
@@ -155,11 +155,11 @@ def _(mo):
 def _(exercise_block,mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("Latent Diffusion 节省什么？","主要减少去噪网络处理的空间位置与张量规模。"),
                 ("f=8 时空间位置缩小多少倍？","每边缩小 8，位置数缩小 64 倍。"),
-                ("为何 decode 前除 latent_scale？","恢复 autoencoder 训练时预期的 latent 数值尺度。"),
+                ("若 diffusion 始终处理 `z_scaled = latent_scale * z`，补全解码代码：`x_hat = decoder(____)`；还应检查什么？","填 `z_scaled / latent_scale`。还应检查 `latent_scale > 0`、除法后的 shape 与 autoencoder latent shape 一致，并确认训练与推理使用同一缩放约定。"),
                 ("调大 f 与 channels，观察标量比例。","f 二次降低空间量，channels 线性增加容量。"),
             ),
         ],

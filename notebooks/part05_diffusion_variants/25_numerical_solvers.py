@@ -27,12 +27,12 @@ def _(CHAPTERS,chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     一次 denoiser 调用很昂贵。若生成轨迹可看成 ODE
     \(dx/dt=v(x,t)\)，采样就是数值积分问题：怎样用更少步仍跟准曲线？
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 导数是局部斜率，ODE 指定每个位置的运动速度。
     - DDIM 确定性采样已经像离散轨迹。
@@ -62,7 +62,7 @@ def _(intuition_and_rigor):
 def _(derivation_map,mo):
     mo.vstack(
         [
-            mo.md("## 3–6. 从面积到数值积分"),
+            mo.md("## 从面积到数值积分"),
             derivation_map(["ODE 给速度","小时间内位移≈速度×时间","Euler 用左端速度","Heun 预测终点速度","两端平均","比较解析解误差"]),
             mo.md(r"""
             测试方程 \(x'=x,x(0)=1\) 的解析解 \(e^t\)。
@@ -116,7 +116,7 @@ def _(COLORS,mo,np,plt,solver_steps):
     _hvals=1/_ns;_hsol=(1+_hvals+_hvals**2/2)**_ns;_herrs=np.abs(_hsol-np.e)
     _axes[1].loglog(_ns,_eerrs,label="Euler",color=COLORS["data"]);_axes[1].loglog(_ns,_herrs,label="Heun",color=COLORS["model"]);_axes[1].legend(fontsize=8)
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. 解析轨迹对比
+    mo.vstack([mo.md(fr"""## 解析轨迹对比
 
     Euler final error={_err_e:.3e}；Heun final error={_err_h:.3e}。
     这是平滑 toy ODE 的证据，不保证真实 learned vector field 同样稳定。"""),solver_steps,_fig])
@@ -126,7 +126,7 @@ def _(COLORS,mo,np,plt,solver_steps):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 逐行代码
+    ## 逐行代码
 
     ```python
     # Euler：一次模型调用。
@@ -140,7 +140,7 @@ def _(mo):
     x_next = x + 0.5 * step_size * (k1 + k2)
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - 高阶必然更快：Heun 每步两次网络调用，应按 NFE 比较。
     - 把局部 \(O(h^2)\) 误说成 Euler 的全局误差阶。
@@ -156,11 +156,11 @@ def _(mo):
 def _(exercise_block,mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("Euler 的核心近似？","在一个小时间段内，把速度当作起点速度保持不变。"),
                 ("x=2、h=.1、f=x，Euler 下一步？","2+0.1×2=2.2。"),
-                ("为何按 NFE 比较？","不同 solver 每步调用模型次数不同，步数不是完整计算成本。"),
+                ("Euler 跑 20 步、每步 1 次模型调用；Heun 跑 10 步、每步 2 次。写出两者 `NFE`，并说明为什么这样比较更公平。","两者都是 `NFE=20`。不同 solver 每步调用模型次数不同，因此只比较步数会掩盖真实计算成本；固定 NFE 后再比较误差，才能更接近等预算比较。"),
                 ("减少 steps，比较两种误差。","Heun 通常在同一步数下更准，但需两倍调用。"),
             ),
         ],

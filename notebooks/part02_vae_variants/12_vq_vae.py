@@ -29,7 +29,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     语言、音素和物体部件常呈现离散结构。VQ-VAE 不让 encoder 输出任意连续 latent，
     而是从 codebook 中选择最近的向量：
@@ -38,7 +38,7 @@ def _(mo):
     k^*=\arg\min_k\|z_e(x)-e_k\|_2,\qquad z_q=e_{k^*}.
     \]
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 1 章：欧氏距离衡量向量接近程度。
     - 第 7 章：decoder 根据 latent 重构。
@@ -64,7 +64,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–6. 最近邻、codebook 与 straight-through"),
+            mo.md("## 最近邻、codebook 与 straight-through"),
             derivation_map(["encoder 得到 z_e", "计算到所有 e_k 的距离", "argmin 选择索引", "decoder 读取 z_q", "ST 传梯度", "更新 codebook 与 commitment"]),
             mo.md(r"""
             常见目标：
@@ -129,7 +129,7 @@ def _(COLORS, encoder_x, encoder_y, mo, np, plt):
     _axes[1].bar([f"e{i}" for i in range(len(_codebook))], _distances, color=[COLORS["success"] if i==_index else COLORS["data"] for i in range(len(_codebook))])
     _axes[1].set_title("squared distance")
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. 量化边界交互
+    mo.vstack([mo.md(fr"""## 量化边界交互
 
     选择 code **e{_index}**，\(z_q={_quantized}\)，最小平方距离={_distances[_index]:.3f}。
     缓慢移动 z_e，观察越过 Voronoi 边界时索引突然跳变。"""),
@@ -140,7 +140,7 @@ def _(COLORS, encoder_x, encoder_y, mo, np, plt):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 代码映射
+    ## 代码映射
 
     ```python
     # z_e: [B,D]；codebook: [K,D]。
@@ -153,7 +153,7 @@ def _(mo):
     z_st = z_e + (z_q - z_e).detach()
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - 把 straight-through 称为精确微分：它是有偏梯度估计。
     - argmin 沿 feature 轴：会为每个坐标选不同 code，破坏整向量量化。
@@ -168,11 +168,11 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("为什么 VQ latent 是离散的？", "虽然每个 code 是连续向量，但可选择的索引只有有限 K 个。"),
                 ("B=16、K=512、D=64，distance shape？", "`[16,512]`。"),
-                ("`z_e + (z_q-z_e).detach()` forward 等于什么？", "数值上等于 z_q；梯度路径近似通过 z_e。"),
+                ("`z_e + (z_q-z_e).detach()` forward 等于什么？", "forward 数值上等于 `z_q`；反向传播时 `detach()` 切断括号内路径，因此来自后续网络的梯度按恒等映射近似传到 `z_e`。"),
                 ("移动 z_e 穿过边界，观察索引。", "索引突然跳变说明量化映射不连续，也解释了普通梯度困难。"),
             ),
         ],

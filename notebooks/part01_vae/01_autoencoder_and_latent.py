@@ -53,7 +53,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     想象你要把一张 64 像素的小图片通过电话告诉朋友。逐像素朗读当然可以，
     但很慢。更聪明的方法是先概括：“这是一个稍微向右倾斜的 7”。
@@ -75,7 +75,7 @@ def _(mo):
 
     答案是：**还没有。** 这是通往 VAE 的第一个缺口。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 一个数字列表可以看成向量，例如 \((2, 3)\)。
     - 函数接收输入并产生输出，例如 \(f(x)=2x+1\)。
@@ -114,7 +114,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–5. 即时数学与推导地图"),
+            mo.md("## 即时数学与推导地图"),
             derivation_map(
                 [
                     "把数据写成向量",
@@ -214,7 +214,7 @@ def _(COLORS, angle, mo, np, plt):
         [
             mo.md(
                 f"""
-                ## 7. 交互实验：亲手寻找好的压缩方向
+                ## 交互实验：亲手寻找好的压缩方向
 
                 当前角度：**{angle.value}°**，当前 MSE：**{_mse:.3f}**。
 
@@ -232,7 +232,7 @@ def _(COLORS, angle, mo, np, plt):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8–10. 公式、代码验证与错误案例
+    ## 公式、代码验证与错误案例
 
     ```python
     # x 的 shape 是 [batch_size, input_dim]
@@ -262,7 +262,7 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 (
                     "用自己的话解释 encoder、latent 和 decoder 各自做什么。",
@@ -274,7 +274,7 @@ def _(exercise_block, mo):
                 ),
                 (
                     "把代码中的 `mean()` 改成 `sum()`，结果的含义发生了什么变化？",
-                    "它变成所有样本、所有坐标误差的总和，数值会随 batch size 和输入维度增长；比较不同实验时必须统一 reduction。",
+                    "`sum()` 得到所有样本、所有坐标误差的总和，数值会随 batch size 和输入维度增长；`mean()` 则按元素平均。比较不同实验时必须统一 reduction。",
                 ),
                 (
                     "拖动角度，先预测哪个方向 MSE 最小，再用图验证。记录预测与结果是否一致。",

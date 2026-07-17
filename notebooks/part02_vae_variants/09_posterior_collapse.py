@@ -29,7 +29,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     VAE 可能得到很低的 KL，看起来“正则得很好”，实际却完全不使用 latent：
 
@@ -40,7 +40,7 @@ def _(mo):
 
     不同输入得到几乎相同 posterior，decoder 只能依赖自身能力生成。这叫 posterior collapse。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 8 章：更强 KL 压力会减少 latent 信息。
     - 第 4 章：在满足支持集等常规条件时，KL=0 表示两个分布几乎处处相同。
@@ -67,7 +67,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–6. 为什么空白 latent 是局部最优"),
+            mo.md("## 为什么空白 latent 是局部最优"),
             derivation_map(["decoder 很强", "早期 z 信息噪声大", "忽略 z 可先改善重构", "KL 同时下降", "encoder 梯度变弱", "形成 collapse"]),
             mo.md(r"""
             常用干预：
@@ -149,7 +149,7 @@ def _(COLORS, beta, decoder_strength, mo, np, plt):
     _axes[1].set_title("KL annealing")
     _axes[1].legend(fontsize=8)
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. 交互诊断
+    mo.vstack([mo.md(fr"""## 交互诊断
 
     toy 最优 latent 信息量约为 **{_info[_best]:.3f}**。
     decoder 越强或 beta 越大，最优点越容易靠近 0。该实验解释机制，不证明所有 collapse 都由同一原因造成。"""),
@@ -160,7 +160,7 @@ def _(COLORS, beta, decoder_strength, mo, np, plt):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 诊断代码
+    ## 诊断代码
 
     ```python
     # 每个 latent dimension 先对 batch 求平均 KL。
@@ -175,7 +175,7 @@ def _(mo):
     shuffled_reconstruction = decoder(z[torch.randperm(z.shape[0])])
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - KL 下降就宣布训练更好：必须结合重构、active units 与 z 扰动实验。
     - 把 \(q(z|x)\)、aggregated posterior \(q(z)\) 和 prior \(p(z)\) 当成同一个对象。
@@ -191,11 +191,11 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("用纸条类比解释 collapse。", "decoder 自己能完成任务且读取纸条要付 KL 成本，于是 encoder 发送与输入无关的信息。"),
-                ("8 个维度中只有 2 个 KL>0.01，active units 是多少？", "2。"),
-                ("为什么要记录 kl_per_dim？", "总 KL 会隐藏不同维度的使用差异，逐维日志能识别死亡维度。"),
+                ("按本章的 KL-threshold 代理，8 个维度中只有 2 个满足 KL>0.01，代理 active count 是多少？", "代理计数是 2。它只回答“有几维超过本章阈值”，不能冒充文献中基于 posterior mean 跨数据方差定义的 active units。"),
+                ("已知 `kl_elementwise` shape 为 `[B,D]`，写出本章 KL-threshold 代理指标的 `kl_per_dim` 与 `active_units` 代码。", "`kl_per_dim = kl_elementwise.mean(dim=0)`，`active_units = (kl_per_dim > 0.01).sum()`。这是本章用于诊断的 KL-threshold 代理；文献也常用 posterior mean 跨数据的方差定义 active units，二者不可混称为同一指标。"),
                 ("调高 decoder strength 与 beta，预测最优信息量。", "两者通常都会把 toy 最优点推向 0。"),
             ),
         ],

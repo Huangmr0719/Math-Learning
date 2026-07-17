@@ -51,7 +51,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     假设让一个完全不会画画的人，一步画出一张清晰的人脸。这一步需要同时决定轮廓、
     五官、纹理和光影，非常困难。
@@ -66,7 +66,7 @@ def _(mo):
     为了获得这些训练用的“稍微被破坏的数据”，我们先定义一个已知的 forward
     noising process；生成时再学习反方向。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 6 章：标准 Gaussian 噪声 \(\epsilon\sim\mathcal N(0,I)\) 容易采样。
     - 向量的每个坐标都可以同时加噪。
@@ -111,7 +111,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–5. 从小幅破坏到 Markov chain"),
+            mo.md("## 从小幅破坏到 Markov chain"),
             derivation_map(
                 [
                     "从数据 x0 出发",
@@ -212,7 +212,7 @@ def _(COLORS, experiment_seed, mo, noise_step, np, plt):
         [
             mo.md(
                 fr"""
-                ## 7. 交互实验：逐步抹去数据结构
+                ## 交互实验：逐步抹去数据结构
 
                 当前 \(t={noise_step.value}\)。拖动 stepper，观察八个团的身份信息怎样
                 逐步消失。这里使用固定 \(\beta={_beta}\) 只为清楚展示；
@@ -244,7 +244,7 @@ def _(mo, np):
 
     mo.md(
         fr"""
-        ## 6、9. Markov 性的可执行检查
+        ## Markov 性的可执行检查
 
         给定同一个当前状态、同一个 transition rule 和同一份新噪声，两条不同历史得到：
 
@@ -255,7 +255,7 @@ def _(mo, np):
         这段实验检查代码是否只使用当前状态；Markov property 本身来自我们对联合分布
         的建模定义，不是由这一个数值例子证明。
 
-        ## 8. 公式与代码逐行对应
+        ## 公式与代码逐行对应
 
         ```python
         # beta_t 是当前一步加入的方差比例，shape 可为标量，
@@ -279,7 +279,7 @@ def _(mo, np):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 10. 错误与反例
+    ## 错误与反例
 
     1. **把“Markov”理解成与过去毫无关系。**
        \(x_t\) 仍然包含 \(x_0\) 的残余信息，只是给定 \(x_{t-1}\) 后，不必再次条件于更早状态。
@@ -302,7 +302,7 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 (
                     "用自己的话解释 Markov property，不使用“无记忆”三个字。",
@@ -314,11 +314,11 @@ def _(exercise_block, mo):
                 ),
                 (
                     "若删除 `sqrt(1-beta_t) * x_previous` 会发生什么？",
-                    "每一步只剩新随机噪声，链条会立即丢失此前状态，而不是逐步破坏数据。",
+                    "更新式只剩 `x_t = sqrt(beta_t) * epsilon`，每一步都由新随机噪声重新生成，链条会立即丢失此前状态，而不是逐步破坏数据。",
                 ),
                 (
                     "修改随机种子并比较同一个 t 的点云。哪些性质改变，哪些总体趋势不变？",
-                    "单个点位置会改变，但随 t 增大、数据结构被抹平并趋向 Gaussian 的总体趋势应保持。",
+                    "单个点位置会改变；在 schedule 使累计信号保留率足够接近 0 的前提下，随 t 增大、数据结构被抹平并接近标准 Gaussian 的总体趋势应保持。有限 T 或噪声不足时，不能断言已经达到标准 Gaussian。",
                 ),
             ),
         ],

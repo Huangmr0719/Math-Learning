@@ -27,12 +27,12 @@ def _(CHAPTERS,chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     同一个 noisy state 可由信号和噪声描述。模型可以预测 \(\epsilon\)、\(x_0\)、
     score，或 velocity \(v\)。它们不是四个无关目标，而是同一二维线性坐标系的不同基。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     \[
     x_t=\alpha_t x_0+\sigma_t\epsilon,\qquad \alpha_t^2+\sigma_t^2=1.
@@ -67,7 +67,7 @@ def _(intuition_and_rigor):
 def _(derivation_map,mo):
     mo.vstack(
         [
-            mo.md("## 3–6. 参数化换算与 SNR"),
+            mo.md("## 参数化换算与 SNR"),
             derivation_map(["写 xt 混合式","定义 v","组成 2×2 旋转矩阵","转置求逆","得到 x0 与 epsilon","score 再做时间缩放"]),
             mo.md(r"""
             \[
@@ -115,7 +115,7 @@ def _(COLORS,angle,mo,np,plt,v_prediction):
     _ax.quiver([0,0,0],[0,0,0],[_xt,_x0,_eps],[0,_v,0],angles="xy",scale_units="xy",scale=1,color=[COLORS["data"],COLORS["model"],COLORS["prior"]])
     _ax.set_xlim(-2.5,2.5);_ax.set_ylim(-2.5,2.5);_ax.set_aspect("equal")
     _ax.set_title("线性坐标换算")
-    mo.vstack([mo.md(fr"""## 7、9. 等价公式随机点检查
+    mo.vstack([mo.md(fr"""## 等价公式随机点检查
 
     恢复 \(x_0={_x0:.4f}\)、\(\epsilon={_eps:.4f}\)；
     重构误差 max=`{max(abs(_xt_check-_xt),abs(_v_check-_v)):.2e}`。"""),mo.hstack([angle,v_prediction],widths="equal"),_fig])
@@ -125,7 +125,7 @@ def _(COLORS,angle,mo,np,plt,v_prediction):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 代码
+    ## 代码
 
     ```python
     # alpha、sigma 已 reshape 到能与 xt 广播的 shape。
@@ -134,7 +134,7 @@ def _(mo):
     score_hat = -epsilon_hat / sigma.clamp_min(1e-5)
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - 把 \(\alpha_t\) 当第 15 章单步 alpha：必须先声明记号。
     - score 与 epsilon 不加缩放直接互换。
@@ -150,11 +150,11 @@ def _(mo):
 def _(exercise_block,mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("为什么称为不同参数化？","它们表达同一 noisy state 中的信号与噪声，但选择不同预测坐标和损失尺度。"),
-                ("alpha=.8、sigma=.6、xt=1、v=0，求 x0 与 epsilon。","x0=.8，epsilon=.6。"),
-                ("为什么 clamp sigma？","防止接近干净端时除以接近 0 导致数值爆炸。"),
+                ("在 `x_t = alpha*x_0 + sigma*epsilon`、`v = alpha*epsilon - sigma*x_0` 且 `alpha²+sigma²=1` 的约定下，alpha=.8、sigma=.6、xt=1、v=0，求 x0 与 epsilon。","由这组正交变换的逆变换，`x_0 = alpha*x_t - sigma*v = .8`，`epsilon = sigma*x_t + alpha*v = .6`。换用其他论文的 v 定义时必须重新推导，不能直接套数值。"),
+                ("补全从 `x_t` 和 `x_0` 恢复噪声的代码：`safe_sigma = sigma.clamp_min(1e-6)`，`epsilon = ____`；为什么需要 clamp？","填 `(x_t - alpha * x_0) / safe_sigma`。接近干净端时 `sigma` 接近 0，直接相除会放大舍入误差；但 clamp 是数值保护，不改变端点处公式本身不可用、需单独处理的事实。"),
                 ("拖动 angle，观察同一 xt、v 的换算。","时间改变坐标旋转角，因此同一数值预测对应不同 x0 与 epsilon。"),
             ),
         ],

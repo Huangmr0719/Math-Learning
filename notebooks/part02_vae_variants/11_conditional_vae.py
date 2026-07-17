@@ -29,7 +29,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     普通 VAE 能生成“像数据”的样本，却不能直接要求“生成数字 7”或“生成红色物体”。
     Conditional VAE 把控制变量 y 同时交给 encoder 和 decoder：
@@ -38,7 +38,7 @@ def _(mo):
     q_\phi(z|x,y),\qquad p_\theta(x|z,y).
     \]
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 2–3 章：条件概率的竖线表示已知信息。
     - 第 7 章：z 表示未直接观测的变化因素。
@@ -68,7 +68,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–6. 条件信息进入哪里"),
+            mo.md("## 条件信息进入哪里"),
             derivation_map(["观测 x 与条件 y", "encoder 推断 z", "重参数化采样", "decoder 接收 z 与 y", "最大化 conditional ELBO"]),
             mo.md(r"""
             One-hot y shape `[B,num_classes]`；与 x 或 hidden 沿 feature 轴拼接。
@@ -142,7 +142,7 @@ def _(COLORS, condition, mo, np, plt, style):
     _axes[1].set_ylabel("生成样本纵坐标")
     _axes[1].legend(fontsize=8)
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. 条件与 style 分离的 toy 实验
+    mo.vstack([mo.md(fr"""## 条件与 style 分离的 toy 实验
 
     当前生成点=`{_generated}`。切换 y 改变类别中心；移动 z 改变类内风格。
     真实 CVAE 未必自动得到如此干净的语义分离，这只是设计目标。"""),
@@ -153,7 +153,7 @@ def _(COLORS, condition, mo, np, plt, style):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 代码映射
+    ## 代码映射
 
     ```python
     # y_onehot: [B, C]；x: [B, input_dim]。
@@ -166,7 +166,7 @@ def _(mo):
     x_hat = decoder(decoder_input)
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - 只给 encoder 条件：训练可能推断更容易，但 decoder 生成时无法控制。
     - 未声明 prior 是否依赖 y，就在 \(p(z)\) 与 \(p(z|y)\) 之间随意切换。
@@ -182,11 +182,11 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("y 与 z 分别承担什么角色？", "y 提供显式控制条件，z 表示在给定条件下仍未指定的变化。"),
                 ("B=32、C=10，one-hot y shape 是什么？", "`[32,10]`。"),
-                ("为什么 decoder 也需要 y？", "生成时只有 z 和目标条件，decoder 必须读取 y 才能改变输出类别。"),
+                ("补全 CVAE decoder 输入：已知 `z:[B,D]`、`y_onehot:[B,C]`，写出 `decoder_input` 及其 shape。", "`decoder_input = torch.cat([z, y_onehot], dim=-1)`，shape 为 `[B,D+C]`。生成时 decoder 必须读取目标条件 `y`，否则无法按条件控制输出。"),
                 ("固定 z 切换 y，再固定 y 移动 z。", "前者应主要改变条件类别，后者应展示类内变化；真实模型需实验验证。"),
             ),
         ],

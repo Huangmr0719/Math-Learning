@@ -14,6 +14,7 @@ from urllib.parse import quote
 import marimo as mo
 
 from .catalog import CHAPTERS, PARTS, ChapterSpec
+from .terminology import TERMS, TermSpec, terms_for_chapter
 
 
 NOTEBOOKS_ROOT = Path(__file__).resolve().parents[2] / "notebooks"
@@ -141,6 +142,47 @@ def course_styles() -> mo.Html:
             white-space: nowrap;
           }
           .gm-course-link:hover { text-decoration: underline; }
+          .gm-term-intro {
+            margin: 0 0 1rem;
+            padding: .9rem 1rem;
+            border: 1px solid #bfdbfe;
+            border-radius: 14px;
+            background: #eff6ff;
+            color: var(--gm-ink);
+          }
+          .gm-term-intro h2 {
+            margin: 0 0 .35rem;
+            font-size: 1.05rem;
+          }
+          .gm-term-intro p { margin: .25rem 0 .7rem; }
+          .gm-term-table-wrap {
+            max-width: 100%;
+            overflow-x: auto;
+            border: 1px solid #d9e2ec;
+            border-radius: 12px;
+            background: var(--gm-paper);
+          }
+          .gm-term-table {
+            width: 100%;
+            min-width: 660px;
+            border-collapse: collapse;
+            color: var(--gm-ink);
+          }
+          .gm-term-table th,
+          .gm-term-table td {
+            padding: .58rem .7rem;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+            vertical-align: top;
+          }
+          .gm-term-table th {
+            color: var(--gm-muted);
+            background: #f8fafc;
+            font-size: .84rem;
+          }
+          .gm-term-table tr:last-child td { border-bottom: 0; }
+          .gm-term-chinese { font-weight: 700; white-space: nowrap; }
+          .gm-term-english { color: #1d4ed8; }
           .gm-chapter-nav {
             display: grid;
             grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
@@ -208,8 +250,94 @@ def course_styles() -> mo.Html:
     )
 
 
+def _terminology_table_html(
+    terms: Sequence[TermSpec],
+    *,
+    include_chapter: bool,
+) -> str:
+    rows = []
+    for term in terms:
+        chapter_cell = (
+            f'<td class="gm-course-number">第 {term.introduced_in} 章</td>'
+            if include_chapter
+            else ""
+        )
+        rows.append(
+            f"""
+            <tr>
+              <td class="gm-term-chinese">{escape(term.chinese)}</td>
+              <td class="gm-term-english">{escape(term.english)}</td>
+              <td>{escape(term.explanation)}</td>
+              {chapter_cell}
+            </tr>
+            """
+        )
+    chapter_header_cell = "<th>首次完整教学</th>" if include_chapter else ""
+    return f"""
+    <div class="gm-term-table-wrap">
+      <table class="gm-term-table">
+        <thead>
+          <tr>
+            <th>通用中文名</th>
+            <th>论文 / 代码中的英文</th>
+            <th>本课程中的含义</th>
+            {chapter_header_cell}
+          </tr>
+        </thead>
+        <tbody>{''.join(rows)}</tbody>
+      </table>
+    </div>
+    """
+
+
+def chapter_terminology(spec: ChapterSpec) -> mo.Html | None:
+    """Show professional terms before their first use in the chapter body."""
+
+    terms = terms_for_chapter(spec.number)
+    if not terms:
+        return None
+    return mo.Html(
+        f"""
+        <section class="gm-term-intro" aria-label="本章新术语">
+          <h2>本章新术语｜先认中文，再熟悉英文</h2>
+          <p>
+            正文优先使用中文；括号中的英文用于阅读论文、识别代码变量和检索资料。
+            没有统一中文译名时会明确说明，不要求死记生造的译名。
+          </p>
+          {_terminology_table_html(terms, include_chapter=False)}
+        </section>
+        """
+    )
+
+
+def terminology_table() -> mo.Html:
+    """Render the complete course glossary from the shared terminology source."""
+
+    return mo.vstack(
+        [
+            course_styles(),
+            mo.md(
+                """
+                ## 专业术语中英对照
+
+                采用“中文先行、英文对照”的阅读规则。第一次学习先理解中文含义；
+                英文用于连接论文标题、代码变量和社区讨论。缩写在首次出现后可以继续使用。
+                """
+            ),
+            mo.Html(
+                _terminology_table_html(
+                    tuple(TERMS.values()),
+                    include_chapter=True,
+                )
+            ),
+        ],
+        gap=0.8,
+    )
+
+
 def chapter_header(spec: ChapterSpec, *, duration: str = "45–90 分钟") -> mo.Html:
     status_note = "内容已精写" if spec.status == "精写" else "结构骨架，待逐部分精写"
+    terminology = chapter_terminology(spec)
     return mo.vstack(
         [
             # 把样式与标题绑定，避免调用者在同一 cell 中先执行 course_styles()
@@ -227,8 +355,9 @@ def chapter_header(spec: ChapterSpec, *, duration: str = "45–90 分钟") -> mo
                 </section>
                 """
             ),
+            *([terminology] if terminology is not None else []),
         ],
-        gap=0,
+        gap=0.8,
     )
 
 
@@ -501,40 +630,40 @@ def chapter_scaffold(spec: ChapterSpec, confidence: mo.ui.slider) -> mo.Html:
             ),
             mo.md(
                 f"""
-                ## 1. 本章为什么存在
+                ## 本章为什么存在
 
                 {spec.question}
 
                 精写时必须从一个可观察的失败案例或生活问题开始，而不是直接抛出公式。
 
-                ## 2. 你已经知道什么
+                ## 你已经知道什么
 
                 {prior}
 
                 **回忆问题：** 请尝试用一句话说明上述知识如何帮助回答本章问题。
 
-                ## 3. 本章即时数学
+                ## 本章即时数学
 
                 {math_items}
 
-                ## 4. 双层解释
+                ## 双层解释
 
                 精写时分别提供“高中生可复述的直觉版本”和“声明假设、定义域、维度的严格版本”。
 
-                ## 5. 推导地图
+                ## 推导地图
                 """
             ),
             derivation_map(["明确已知量", "定义目标量", "列出中间恒等式", "逐步推导", "映射到代码"]),
             mo.md(
                 """
-                ## 6. 维度与定义域检查
+                ## 维度与定义域检查
 
                 - [ ] 所有符号均在使用前定义
                 - [ ] 标量、向量、矩阵、batch 维均明确
                 - [ ] 概率、方差、对数或时间边界满足定义域
                 - [ ] 代码的广播与公式一致
 
-                ## 7. 可视化与交互
+                ## 可视化与交互
 
                 当前自评控件用于确认 marimo 的反应式链路已经接通：
                 """
@@ -546,23 +675,23 @@ def chapter_scaffold(spec: ChapterSpec, confidence: mo.ui.slider) -> mo.Html:
 
                 精写时将替换为本章专属的核心交互实验，并包含重置、固定随机种子和必要的单步控制。
 
-                ## 8. 代码与公式逐行对应
+                ## 代码与公式逐行对应
 
                 精写时保留教学版核心实现；复杂训练器或求解器放入 `src/`。
 
-                ## 9. 数值验证
+                ## 数值验证
 
                 精写时至少加入一种解析—数值、自动微分—有限差分或采样—理论值对比。
 
-                ## 10. 错误与反例
+                ## 错误与反例
 
                 精写时展示一个本章最常见的错误，并解释错误结果、根因和诊断方法。
 
-                ## 11. 分层练习
+                ## 分层练习
 
                 精写时补齐理解题、手算题、代码题、探索题，并在章内折叠答案。
 
-                ## 12. 本章总结与桥梁
+                ## 本章总结与桥梁
 
                 {spec.bridge}
                 """

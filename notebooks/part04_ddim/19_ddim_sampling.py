@@ -28,13 +28,13 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     DDPM 训练网络预测噪声，但生成必须走完很多随机小步。训练目标是否强制我们只能
     使用这条 Markov reverse chain？DDIM 的答案是否定的：保持相同 noisy marginals，
     可以选择另一族采样过程，并用更少时间步生成。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 15 章：\(x_t=\sqrt{\bar\alpha_t}x_0+\sqrt{1-\bar\alpha_t}\epsilon\)。
     - 第 17 章：网络预测 \(\epsilon_\theta(x_t,t)\)。
@@ -68,7 +68,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–6. 从 xt 分解到 DDIM 更新"),
+            mo.md("## 从 xt 分解到 DDIM 更新"),
             derivation_map(["网络预测 epsilon", "代数解出 x0_hat", "选择更早时刻 s", "按 alpha_bar_s 重组信号与噪声", "eta 控制新随机噪声"]),
             mo.md(r"""
             常用
@@ -126,7 +126,7 @@ def _(COLORS, eta, mo, np, plt, steps):
     _axes[1].plot(range(steps.value), np.linalg.norm(np.diff(_path,axis=0,prepend=_path[:1]),axis=1), color=COLORS["data"])
     _axes[1].set_title("每步移动长度")
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. 跳步与随机性
+    mo.vstack([mo.md(fr"""## 跳步与随机性
 
     当前 {steps.value} 步、eta={eta.value:.2f}。eta=0 时重复执行得到同一路径；
     eta>0 时新噪声改变轨迹。此 toy 图解释控制量，不代表真实图像质量。"""),
@@ -137,7 +137,7 @@ def _(COLORS, eta, mo, np, plt, steps):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 核心代码
+    ## 核心代码
 
     ```python
     x0_hat = (
@@ -153,7 +153,7 @@ def _(mo):
         x_s = x_s + sigma * torch.randn_like(x_t)
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - eta=0 等同于“没有噪声模型”：网络仍预测训练噪声，只有采样额外随机项为 0。
     - 时间索引升序：会重新加噪。
@@ -168,11 +168,11 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("eta=0 的确定性指什么？", "固定初始 xT、网络和时间表后不再注入新随机噪声，输出可复现。"),
                 ("alpha_bar_t=.25、xt=1、eps=.5，求 x0_hat。", r"\((1-\sqrt{.75}\times.5)/.5\approx1.134\)。"),
-                ("为什么 schedule 必须递减？", "采样要从高噪声时刻走向低噪声时刻。"),
+                ("已知 `times` 是采样时间索引，写一个断言检查它严格递减；若不递减，时间方向错在哪里？", "可写 `assert all(t_next < t for t, t_next in zip(times[:-1], times[1:]))`。采样必须从高噪声时刻走向低噪声时刻；非递减序列会重复或逆转去噪方向。"),
                 ("同时减少 steps、增大 eta，观察路径。", "步长变大且随机扰动增强，轨迹更粗糙；真实质量需模型实验判断。"),
             ),
         ],

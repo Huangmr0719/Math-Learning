@@ -28,7 +28,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     文本生成从随机噪声开始，但图像编辑要先把一张真实图映射到模型的噪声轨迹。
     DDIM inversion 近似反向执行确定性采样：
@@ -36,7 +36,7 @@ def _(mo):
     x_0\rightarrow x_1\rightarrow\cdots\rightarrow x_T.
     \]
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 19 章：eta=0 给出确定性 DDIM 更新。
     - 数值逆过程会积累局部误差。
@@ -62,7 +62,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–6. Invert → edit → denoise"),
+            mo.md("## Invert → edit → denoise"),
             derivation_map(["真实 x0", "按确定性公式向高噪声推进", "保存 latent trajectory", "修改条件", "从某时刻倒序去噪", "比较重构与编辑"]),
             mo.md(r"""
             一个简化确定性路径可写成
@@ -142,7 +142,7 @@ def _(COLORS, inversion_steps, mo, model_bias, np, plt):
     _axes[1].set_xlabel("reverse noise time");_axes[1].set_ylabel("|state - ideal path|")
     _axes[1].set_title("逐步偏离理想 DDIM 路径")
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. 一维 DDIM inversion 数值实验
+    mo.vstack([mo.md(fr"""## 一维 DDIM inversion 数值实验
 
     这里使用真实 DDIM 重组公式，而不是一般旋转类比。我们人为设定
     \(x_0={_clean}\)、真实噪声 \(\epsilon={_true_epsilon}\)，并令预测器为
@@ -158,7 +158,7 @@ def _(COLORS, inversion_steps, mo, model_bias, np, plt):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 实现检查
+    ## 实现检查
 
     ```python
     trajectory = [x0]
@@ -173,7 +173,7 @@ def _(mo):
 
     删除 trajectory 保存会让编辑难以从中间噪声强度开始，也不易诊断误差出现在哪一步。
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - 把 inversion 当严格 inverse：网络与离散化使它通常只是近似。
     - inversion 与 reconstruction 使用不同 scheduler：无法闭环比较。
@@ -189,11 +189,11 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("inversion 的目的是什么？", "把真实样本定位到模型的 noisy trajectory，便于重构或在修改条件后编辑。"),
                 ("每步误差 0.01，能否断言 50 步总误差 0.5？", "不能；误差是向量并经过非线性传播，可能相消或放大。"),
-                ("为什么保存 trajectory？", "可从不同噪声强度编辑并逐步诊断重构偏差。"),
+                ("补全轨迹保存代码：`trajectory = [x.detach().clone()]`；每次更新 `x` 后执行什么？它对诊断有什么用？", "执行 `trajectory.append(x.detach().clone())`。`clone()` 保存当时的独立快照，`detach()` 避免保留整条梯度图；这些中间状态可用于定位误差从哪一步开始累积，并支持从不同噪声强度编辑。"),
                 ("增加 steps 与 bias，分别观察误差。", "bias=0 时本 toy 路径应几乎精确闭环；bias 表示状态相关模型误差。增加 steps 会减小单步状态变化，但不会自动消除系统偏差。"),
             ),
         ],

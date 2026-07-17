@@ -63,7 +63,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     第 16 章已经知道理想 reverse posterior 的形式，但网络究竟应该输出什么？
     如果直接让网络预测一整个概率分布，训练目标又怎样得到？
@@ -81,7 +81,7 @@ def _(mo):
 
     本章要严谨说明：这个 MSE 从哪里来，以及它与完整 ELBO 哪里相同、哪里不同。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 5 章：ELBO 把难算的 log likelihood 变成可优化下界。
     - 第 4、6 章：Gaussian KL 在协方差固定时可解析计算。
@@ -122,7 +122,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–5. 从 Diffusion ELBO 到 epsilon MSE"),
+            mo.md("## 从 Diffusion ELBO 到 epsilon MSE"),
             derivation_map(
                 [
                     "展开 reverse joint probability",
@@ -335,7 +335,7 @@ def _(
         [
             mo.md(
                 fr"""
-                ## 7、9. KL 与加权噪声 MSE 的数值等价
+                ## KL 与加权噪声 MSE 的数值等价
 
                 固定真实 \(\epsilon={_true_epsilon[0]}\)：
 
@@ -379,7 +379,7 @@ def _(mo):
     \(\mathbb E[\epsilon|x_t]\)，它对应 marginal score，而不是某个未知
     单一样本 \(x_0\) 的 conditional score。
 
-    ## 8. 教学版训练代码
+    ## 教学版训练代码
 
     ```python
     # x0 shape: [batch, feature...]。
@@ -408,7 +408,7 @@ def _(mo):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 10. 错误与反例
+    ## 错误与反例
 
     1. **宣称 simple MSE 与完整 ELBO 完全相等。**
        它删除了时间相关权重。理想无限容量下各 t 的条件最优预测相同，但有限模型的权衡会改变。
@@ -433,7 +433,7 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 (
                     "为什么噪声预测可以 self-supervised？",
@@ -444,8 +444,8 @@ def _(exercise_block, mo):
                     r"\((1.2-0.7)^2=0.25\)。",
                 ),
                 (
-                    "删除 model 的时间输入会造成什么歧义？",
-                    "模型无法区分轻噪声和重噪声状态，也不知道应采用哪一组 schedule 系数。",
+                    "把 `pred = model(x_t, t)` 错改为 `pred = model(x_t)` 会造成什么歧义？再写一个最小 shape 检查。",
+                    "模型无法区分轻噪声和重噪声状态，也不知道当前噪声尺度。至少检查 `assert pred.shape == epsilon.shape == x_t.shape`；但 shape 正确仍不能弥补缺失时间条件的语义错误。",
                 ),
                 (
                     "拖动 t，观察 VLB 权重曲线相对 simple MSE 如何变化。",

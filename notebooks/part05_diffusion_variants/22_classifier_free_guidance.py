@@ -27,7 +27,7 @@ def _(CHAPTERS,chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     条件模型知道提示词，但生成可能不够听话。Classifier-Free Guidance 同一网络做两次预测：
     无条件与有条件，然后沿两者差异外推：
@@ -38,7 +38,7 @@ def _(mo):
     本章采用常见代码库的 scale 约定：\(w=0\) 为 unconditional，
     \(w=1\) 为普通 conditional，\(w>1\) 才是额外 guidance。
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 11 章：条件变量控制生成。
     - 第 17 章：预测噪声对应一个去噪方向。
@@ -69,7 +69,7 @@ def _(intuition_and_rigor):
 def _(derivation_map,mo):
     mo.vstack(
         [
-            mo.md("## 3–6. Conditional score 差与线性外推"),
+            mo.md("## Conditional score 差与线性外推"),
             derivation_map(["训练时随机置空条件","得到 unconditional prediction","得到 conditional prediction","计算条件差向量","乘 guidance scale","进入 sampler"]),
             mo.md(r"""
             由 Bayes score 恒等式：
@@ -111,7 +111,7 @@ def _(COLORS,dropout,mo,np,plt,scale):
     _axes[1].plot(_w,_diversity,label="toy diversity",color=COLORS["prior"])
     _axes[1].axvline(scale.value,linestyle="--",color=COLORS["danger"]);_axes[1].legend(fontsize=8)
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. Guidance 外推
+    mo.vstack([mo.md(fr"""## Guidance 外推
 
     unconditional=`{_u}`，conditional=`{_c}`，guided=`{_g}`。
     dropout={dropout.value:.2f} 决定训练中无条件样本比例；它不是采样 scale。"""),mo.hstack([scale,dropout],widths="equal"),_fig])
@@ -121,7 +121,7 @@ def _(COLORS,dropout,mo,np,plt,scale):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 代码
+    ## 代码
 
     ```python
     # 训练：以 p_uncond 把 condition 替换为空 token。
@@ -133,7 +133,7 @@ def _(mo):
     eps = eps_u + guidance_scale * (eps_c - eps_u)
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - 把 scale=0 说成 conditional：它给 unconditional。
     - 从论文复制 scale 数值却不核对约定：本章的 w 与某些论文的 s 相差 1。
@@ -149,11 +149,11 @@ def _(mo):
 def _(exercise_block,mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("CFG 放大哪个方向？","conditional prediction 减 unconditional prediction 的差方向。"),
-                ("u=2、c=3、w=4，guided？","2+4×(3-2)=6。"),
-                ("为什么训练要丢条件？","让同一网络学到可用于 CFG 的 unconditional prediction。"),
+                ("采用 `guided = u + w*(c-u)` 的约定，u=2、c=3、w=4，guided 是多少？","`2 + 4*(3-2) = 6`。这里必须先声明 scale 约定；有些实现把系数写在别的位置，同一个数值参数未必有相同含义。"),
+                ("设 `y: [B,C]`，写出以概率 `p_uncond` 丢弃整条样本条件的 mask，并得到 `y_used`。为什么训练要这样做？","可写 `keep = (torch.rand(B, device=y.device) > p_uncond).float()[:, None]`，再写 `y_used = keep * y`，shape 为 `[B,C]`。这样同一网络同时见到有条件与无条件样本，推理时才能得到 CFG 所需的两种预测。"),
                 ("增大 scale，观察 toy alignment/diversity。","一致性提高但多样性下降，体现常见权衡而非严格定律。"),
             ),
         ],

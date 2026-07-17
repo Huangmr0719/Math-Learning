@@ -1,12 +1,16 @@
 import ast
+from html import unescape
 from pathlib import Path
 
 from src.teaching.catalog import CHAPTERS
 from src.teaching.components import (
     chapter_navigation,
+    chapter_terminology,
     course_map_table,
     exercise_block,
+    terminology_table,
 )
+from src.teaching.terminology import TERMS, terms_for_chapter
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -27,6 +31,20 @@ def _formal_notebooks() -> list[Path]:
         NOTEBOOKS / chapter.part / chapter.filename
         for chapter in CHAPTERS.values()
     ]
+
+
+def _exercise_pairs(path: Path) -> tuple[tuple[str, str], ...]:
+    """Extract the four literal question/answer pairs from one chapter."""
+
+    tree = ast.parse(path.read_text(encoding="utf-8"))
+    calls = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and _call_name(node) == "exercise_block"
+    ]
+    assert len(calls) == 1, f"{path} 必须且只能有一个章末检测"
+    assert len(calls[0].args) == 4, f"{path} 必须包含四类练习"
+    return tuple(ast.literal_eval(argument) for argument in calls[0].args)
 
 
 def _is_marimo_cell(node: ast.AST) -> bool:
@@ -97,6 +115,45 @@ def test_home_uses_reactive_marimo_controls():
     assert "mo.ui.slider(" in source
     assert "part_filter.value" in source
     assert "completed_through.value" in source
+
+
+def test_home_exposes_the_shared_bilingual_glossary():
+    source = (NOTEBOOKS / "00_home.py").read_text(encoding="utf-8")
+    assert "terminology_table()" in source
+    assert "潜变量（latent variable）" in source
+    assert "得分场（score field）" in source
+
+    html = terminology_table()._repr_html_()
+    assert "专业术语中英对照" in html
+    assert html.count("<tr>") == len(TERMS) + 1
+
+
+def test_every_new_term_has_one_shared_first_chapter_explanation():
+    assert len(TERMS) >= 90
+    for key, term in TERMS.items():
+        assert term.chinese.strip(), key
+        assert term.english.strip(), key
+        assert len(term.explanation) >= 12, key
+        assert 1 <= term.introduced_in <= 29, key
+
+    for number in range(1, 30):
+        terms = terms_for_chapter(number)
+        assert terms, f"第 {number} 章没有登记首次引入术语"
+        html = unescape(chapter_terminology(CHAPTERS[number])._repr_html_())
+        assert "先认中文，再熟悉英文" in html
+        for term in terms:
+            assert term.chinese in html
+            assert term.english in html
+            assert term.explanation in html
+
+
+def test_ambiguous_terms_use_explicit_course_conventions():
+    assert TERMS["latent_variable"].chinese == "潜变量"
+    assert TERMS["likelihood"].chinese == "似然"
+    assert TERMS["score"].chinese == "得分函数"
+    assert "不是模型评分" in TERMS["score"].explanation
+    assert TERMS["cfg"].chinese == "无分类器引导"
+    assert "尚未完全统一" in TERMS["rectified_flow"].explanation
 
 
 def test_course_map_uses_semantic_html_instead_of_dynamic_markdown_table():
@@ -219,6 +276,34 @@ def test_every_chapter_places_assessment_before_summary_and_navigation():
         assert source.count("exercise_block(") == 1, path
         assert source.count("chapter_footer(") == 1, path
         assert source.index("exercise_block(") < source.index("chapter_footer("), path
+
+
+def test_every_chapter_has_four_substantive_assessment_pairs():
+    for path in _formal_notebooks():
+        pairs = _exercise_pairs(path)
+        assert len(pairs) == 4
+        for question, answer in pairs:
+            assert isinstance(question, str) and len(question.strip()) >= 8, path
+            assert isinstance(answer, str) and len(answer.strip()) >= 8, path
+
+
+def test_every_code_exercise_names_a_concrete_code_expression():
+    """第三题不能只是口头复述，至少要定位到可修改或诊断的代码。"""
+
+    for path in _formal_notebooks():
+        coding_question, coding_answer = _exercise_pairs(path)[2]
+        assert "`" in coding_question, f"{path} 的代码题缺少具体代码对象"
+        assert "`" in coding_answer, f"{path} 的代码答案缺少可核对实现"
+
+
+def test_assessment_questions_are_unique_across_the_curriculum():
+    questions = [
+        question
+        for path in _formal_notebooks()
+        for question, _answer in _exercise_pairs(path)
+    ]
+    assert len(questions) == 120
+    assert len(questions) == len(set(questions)), "课程中存在重复考题"
 
 
 def test_every_formal_chapter_is_a_real_reactive_marimo_notebook():

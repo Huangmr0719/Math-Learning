@@ -29,7 +29,7 @@ def _(CHAPTERS, chapter_header):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 1. 本章为什么存在
+    ## 本章为什么存在
 
     ELBO 用一个 posterior 样本估计 evidence。若 \(q(z|x)\) 漏掉了重要区域，
     单样本估计会很松。IWAE 同时抽 K 个样本，用 importance weights 平均：
@@ -40,7 +40,7 @@ def _(mo):
     \frac{p(x,z_k)}{q(z_k|x)}\right].
     \]
 
-    ## 2. 你已经知道什么
+    ## 你已经知道什么
 
     - 第 5 章：ELBO 是 \(\log p(x)\) 的下界。
     - 第 4 章：Monte Carlo 用样本平均近似期望。
@@ -67,7 +67,7 @@ def _(intuition_and_rigor):
 def _(derivation_map, mo):
     mo.vstack(
         [
-            mo.md("## 3–6. Importance sampling 与 log-sum-exp"),
+            mo.md("## Importance sampling 与 log-sum-exp"),
             derivation_map(["从 q 采样 z", "计算 p(x,z)/q(z|x)", "K 个 weight 求平均", "对平均值取 log", "Jensen 得到下界", "用 log-sum-exp 稳定实现"]),
             mo.md(r"""
             数值稳定公式：
@@ -145,7 +145,7 @@ def _(COLORS, mo, np, plt, resample_seed, sample_count):
     _axes[1].axhline(np.log(_evidence), linestyle="--", color=COLORS["success"], label="log p(x)")
     _axes[1].legend(fontsize=8)
     _fig.tight_layout()
-    mo.vstack([mo.md(fr"""## 7、9. 交互实验
+    mo.vstack([mo.md(fr"""## 交互实验
 
     本次 \(\mathcal L_K={_estimate:.4f}\)，真实 \(\log p(x)={np.log(_evidence):.4f}\)。
     单次估计会波动；右图用 1000 次重复近似其期望，支持下界随 K 变紧。"""),
@@ -156,7 +156,7 @@ def _(COLORS, mo, np, plt, resample_seed, sample_count):
 @app.cell
 def _(mo):
     mo.md(r"""
-    ## 8. 稳定代码
+    ## 稳定代码
 
     ```python
     # log_w shape: [K, batch]，每行对应一个 posterior sample。
@@ -169,7 +169,7 @@ def _(mo):
     loss = -log_mean_weight.mean()
     ```
 
-    ## 10. 错误与反例
+    ## 错误与反例
 
     - 直接 `exp(log_w).mean().log()`：大权重会溢出。
     - q 在重要区域为 0：importance ratio 无法修复 proposal 完全漏掉的支持集。
@@ -185,11 +185,11 @@ def _(mo):
 def _(exercise_block, mo):
     mo.vstack(
         [
-            mo.md("## 11. 分层练习"),
+            mo.md("## 分层练习"),
             exercise_block(
                 ("importance weight 大表示什么？", "该 z 在联合模型下能很好解释 x，但 q 给它的采样概率相对较低。"),
-                ("log weights 为 2、3，写出 K=2 的稳定计算。", "m=3，结果为 3+log(exp(-1)+1)-log2。"),
-                ("logsumexp 应沿哪个轴？", "沿 posterior sample K 轴；随后才对 batch 轴平均。"),
+                ("log weights 为 2、3，写出 K=2 的稳定计算。", "取 `m=3`，则 `logmeanexp = 3 + log(exp(-1)+1) - log(2) ≈ 2.620`。先减最大值可避免直接计算大指数时溢出。"),
+                ("若 `log_w` shape 为 `[K,B]`，用 `torch.logsumexp` 写出稳定的 batch 平均 IWAE bound。", "`bound = (torch.logsumexp(log_w, dim=0) - math.log(K)).mean(dim=0)`。先沿 posterior sample 轴 `K` 得到每个样本的 log-mean-weight `[B]`，再沿 batch 平均。"),
                 ("改变 seed，观察单次 L_K 是否单调。", "通常不严格单调，这正好区分单次随机值与期望定理。"),
             ),
         ],

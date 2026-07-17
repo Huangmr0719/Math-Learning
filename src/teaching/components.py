@@ -397,17 +397,49 @@ def exercise_block(
         return mo.vstack(
             [
                 mo.md(f"### {label}\n\n{question}"),
-                mo.accordion({"展开参考答案": mo.md(answer)}, lazy=True),
+                mo.accordion(
+                    {"完成作答后，展开参考答案": mo.md(answer)},
+                    # 答案预先嵌入但面板默认折叠，因此静态 HTML 离线时
+                    # 也能展开查看，不依赖正在运行的 Python 内核。
+                    lazy=False,
+                ),
             ],
             gap=0.5,
         )
 
     return mo.vstack(
         [
+            mo.callout(
+                mo.md(
+                    """
+                    **章末学习检测｜先作答，再看答案**
+
+                    请先关闭上文或把视线移开，独立完成下面四类任务。
+                    理解题检验能否用自己的话解释；手算题检验公式是否真正会用；
+                    代码题检验数学与实现能否对应；探索题检验能否先预测、再用实验修正判断。
+
+                    参考答案默认隐藏。答案用于反馈和纠错，不代替你的第一次独立尝试。
+                    """
+                ),
+                kind="warn",
+            ),
             item("理解题", understanding),
             item("手算题", calculation),
             item("代码题", coding),
             item("探索题", exploration),
+            mo.callout(
+                mo.md(
+                    """
+                    **建议进入下一章的标准**
+
+                    - [ ] 能不看答案复述核心概念。
+                    - [ ] 能写出手算过程，而不只报出结果。
+                    - [ ] 能说明关键代码行对应哪条数学关系。
+                    - [ ] 展开答案后，已经解释并订正自己的错误。
+                    """
+                ),
+                kind="success",
+            ),
         ],
         gap=1.0,
     )

@@ -2,7 +2,11 @@ import ast
 from pathlib import Path
 
 from src.teaching.catalog import CHAPTERS
-from src.teaching.components import chapter_navigation, course_map_table
+from src.teaching.components import (
+    chapter_navigation,
+    course_map_table,
+    exercise_block,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -191,6 +195,32 @@ def test_every_adjacent_chapter_navigation_link_targets_a_real_notebook():
             assert f'href="?file={notebook}"' in html
 
 
+def test_end_of_chapter_assessment_hides_answers_until_requested():
+    assessment = exercise_block(
+        understanding=("理解问题", "理解答案"),
+        calculation=("手算问题", "手算答案"),
+        coding=("代码问题", "代码答案"),
+        exploration=("探索问题", "探索答案"),
+    )
+    html = assessment._repr_html_()
+
+    assert "章末学习检测｜先作答，再看答案" in html
+    assert html.count("完成作答后，展开参考答案") == 4
+    assert html.count("<marimo-accordion") == 4
+    assert "<marimo-lazy" not in html
+    for answer in ("理解答案", "手算答案", "代码答案", "探索答案"):
+        assert answer in html
+    assert "建议进入下一章的标准" in html
+
+
+def test_every_chapter_places_assessment_before_summary_and_navigation():
+    for path in _formal_notebooks():
+        source = path.read_text(encoding="utf-8")
+        assert source.count("exercise_block(") == 1, path
+        assert source.count("chapter_footer(") == 1, path
+        assert source.index("exercise_block(") < source.index("chapter_footer("), path
+
+
 def test_every_formal_chapter_is_a_real_reactive_marimo_notebook():
     for path in _formal_notebooks():
         source = path.read_text(encoding="utf-8")
@@ -289,11 +319,11 @@ def test_display_outputs_are_explicitly_composed():
             )
 
 
-def test_shared_components_use_marimo_tabs_and_lazy_accordions():
+def test_shared_components_use_marimo_tabs_and_offline_accordions():
     source = (ROOT / "src/teaching/components.py").read_text(encoding="utf-8")
     assert "mo.tabs(" in source
     assert "mo.accordion(" in source
-    assert "lazy=True" in source
+    assert "lazy=False" in source
 
 
 def test_custom_light_surfaces_define_dark_theme_safe_text_colors():

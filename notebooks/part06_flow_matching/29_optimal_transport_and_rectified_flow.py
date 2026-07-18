@@ -125,6 +125,7 @@ def _(COLORS,coupling_marginals,coupling_mass,mo,np,plt):
             _ax.text(_j,_i,f"{_table[_i,_j]:.2f}",ha="center",va="center",color="#111827")
     _ax.set_xticks([0,1],["target A","target B"])
     _ax.set_yticks([0,1],["source A","source B"])
+    _ax.set_title("颜色与数字共同表示 joint probability")
     _fig.colorbar(_image,ax=_ax,label="joint probability")
     _fig.tight_layout()
     mo.vstack([mo.md(fr"""### 联合概率表交互
@@ -139,7 +140,11 @@ def _(COLORS,coupling_marginals,coupling_mass,mo,np,plt):
 
     行和（source marginal）始终为 `{np.round(_source,2)}`，
     列和（target marginal）始终为 `{np.round(_target,2)}`。
-    拖动 \(a\) 会改变联合配对，却不改变两端边缘分布。"""),coupling_mass,_fig])
+    拖动 \(a\) 会改变联合配对，却不改变两端边缘分布。
+
+    **图例与任务：**格内数字与蓝色深浅都表示该 source–target 配对的联合概率；
+    行是 source，列是 target，右侧色条给出颜色刻度。拖动时分别检查每行和、每列和。
+    这张 \(2\times2\) 表只演示 coupling 的定义，不证明某个 coupling 具有最小运输成本。"""),coupling_mass,_fig])
     return
 
 
@@ -158,15 +163,19 @@ def _(COLORS,coupling,mo,np,pair_seed,plt):
     else:_paired=_x1
     _cost=float(np.mean((_paired-_x0)**2))
     _fig,_axes=plt.subplots(1,2,figsize=(9,3.8))
-    for _i in range(_n):_axes[0].plot([0,1],[_x0[_i],_paired[_i]],color=COLORS["data"],alpha=.7)
-    _axes[0].scatter(np.zeros(_n),_x0,color=COLORS["prior"]);_axes[0].scatter(np.ones(_n),_paired,color=COLORS["model"]);_axes[0].set_xticks([0,1],["source","target"])
+    for _i in range(_n):_axes[0].plot([0,1],[_x0[_i],_paired[_i]],color=COLORS["data"],alpha=.7,label="配对连线" if _i==0 else None)
+    _axes[0].scatter(np.zeros(_n),_x0,color=COLORS["prior"],label="source 样本");_axes[0].scatter(np.ones(_n),_paired,color=COLORS["model"],label="target 样本");_axes[0].set_xticks([0,1],["source","target"]);_axes[0].set_ylabel("一维位置");_axes[0].set_title("coupling 决定谁与谁相连");_axes[0].legend(fontsize=7)
     _t=np.linspace(0,1,100);_paths=(1-_t[:,None])*_x0[None,:]+_t[:,None]*_paired[None,:]
-    _axes[1].plot(_t,_paths,alpha=.5);_axes[1].set_title("linear interpolation paths")
+    _axes[1].plot(_t,_paths,alpha=.5);_axes[1].set(xlabel="时间 t",ylabel=r"插值位置 $x_t$",title="每个配对的线性插值轨迹")
     _fig.tight_layout()
     mo.vstack([mo.md(fr"""## Coupling 改变路径
 
     当前平均平方 transport cost={_cost:.4f}。一维排序 pairing 是二次成本 OT 的解；
-    高维情形不能简单逐坐标排序。"""),mo.hstack([coupling,pair_seed],widths="equal"),_fig])
+    高维情形不能简单逐坐标排序。
+
+    **图例与任务：**左图紫点/绿点是两端经验分布，蓝线是当前配对；右图每条线是
+    该配对随时间的插值。切换 coupling 时同时观察交叉数和平方成本。
+    本实验只证明一维等质量经验分布在平方成本下的排序匹配结论；不能外推为高维语义 OT。"""),mo.hstack([coupling,pair_seed],widths="equal"),_fig])
     return
 
 

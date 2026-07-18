@@ -5,10 +5,18 @@ from pathlib import Path
 from src.teaching.catalog import CHAPTERS
 from src.teaching.components import (
     chapter_navigation,
+    chapter_paper_trail,
     chapter_terminology,
     course_map_table,
     exercise_block,
+    paper_guide_navigation,
     terminology_table,
+)
+from src.teaching.paper_guides import (
+    PAPERS,
+    PAPER_GUIDES,
+    PAPER_GUIDES_AFTER_CHAPTER,
+    PAPER_GUIDES_BEFORE_CHAPTER,
 )
 from src.teaching.terminology import TERMS, terms_for_chapter
 
@@ -115,6 +123,9 @@ def test_home_uses_reactive_marimo_controls():
     assert "mo.ui.slider(" in source
     assert "part_filter.value" in source
     assert "completed_through.value" in source
+    assert "PAPER_GUIDES" in source
+    assert '"章节": (' in source
+    assert "论文导读 {_guide_index}/{len(_matching_guides)}" in source
 
 
 def test_home_exposes_the_shared_bilingual_glossary():
@@ -244,12 +255,219 @@ def test_every_adjacent_chapter_navigation_link_targets_a_real_notebook():
     for number, chapter in CHAPTERS.items():
         html = chapter_navigation(chapter)._repr_html_()
         for adjacent_number in (number - 1, number + 1):
+            guide = (
+                PAPER_GUIDES_BEFORE_CHAPTER.get(number)
+                if adjacent_number == number - 1
+                else PAPER_GUIDES_AFTER_CHAPTER.get(number)
+            )
+            if guide is not None:
+                if isinstance(guide, tuple):
+                    guide = guide[0]
+                notebook = NOTEBOOKS / guide.part / guide.filename
+                assert notebook.is_file()
+                assert f'href="?file={notebook}"' in html
+                continue
             adjacent = CHAPTERS.get(adjacent_number)
             if adjacent is None:
                 continue
             notebook = NOTEBOOKS / adjacent.part / adjacent.filename
             assert notebook.is_file()
             assert f'href="?file={notebook}"' in html
+
+
+def test_vae_paper_guide_forms_a_navigation_bridge():
+    first_guide = PAPER_GUIDES["vae_autoencoder_lineage"]
+    second_guide = PAPER_GUIDES["vae_aevb"]
+    first_path = NOTEBOOKS / first_guide.part / first_guide.filename
+    second_path = NOTEBOOKS / second_guide.part / second_guide.filename
+
+    from_chapter_seven = chapter_navigation(CHAPTERS[7])._repr_html_()
+    from_chapter_eight = chapter_navigation(CHAPTERS[8])._repr_html_()
+    first_navigation = paper_guide_navigation(first_guide)._repr_html_()
+    second_navigation = paper_guide_navigation(second_guide)._repr_html_()
+
+    assert f'href="?file={first_path}"' in from_chapter_seven
+    assert f'href="?file={second_path}"' in from_chapter_eight
+    assert "经典论文导读" in from_chapter_seven
+    assert f'href="?file={NOTEBOOKS / CHAPTERS[7].part / CHAPTERS[7].filename}"' in first_navigation
+    assert f'href="?file={second_path}"' in first_navigation
+    assert f'href="?file={first_path}"' in second_navigation
+    assert f'href="?file={NOTEBOOKS / CHAPTERS[8].part / CHAPTERS[8].filename}"' in second_navigation
+
+
+def test_every_vae_chapter_exposes_curated_paper_coordinates():
+    for number in range(1, 14):
+        html = chapter_paper_trail(CHAPTERS[number])._repr_html_()
+        assert "本章论文坐标" in html
+        relevant = [paper for paper in PAPERS.values() if number in paper.chapters]
+        assert relevant
+        for paper in relevant:
+            assert paper.chinese_title in html
+            assert paper.url in html
+
+
+def test_vae_paper_guide_uses_primary_source_math_code_and_feedback():
+    guide = PAPER_GUIDES["vae_aevb"]
+    path = NOTEBOOKS / guide.part / guide.filename
+    source = path.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    cells = [node for node in tree.body if _is_marimo_cell(node)]
+
+    assert len(cells) >= 18
+    assert "https://arxiv.org/abs/1312.6114" in source
+    assert "教学性意译" in source
+    assert "式 (1)–(3) 严格推导" in source
+    assert "可执行核验" in source
+    assert "图 1 解剖" in source
+    assert "图 4 复现思路" in source
+    assert "torch.exp(0.5 * logvar)" in source
+    assert source.count("mo.ui.") >= 10
+    assert "exercise_block(" in source
+    assert "paper_guide_footer(" in source
+
+
+def test_added_vae_paper_seminars_are_interactive_and_source_grounded():
+    expectations = {
+        "vae_autoencoder_lineage": ("Jacobian 惩罚", "latent_gap", "hinton_autoencoder"),
+        "vae_variants_landmarks": ("IWAE 为什么是下界", "iwae_samples", "normalizing_flows"),
+    }
+    for guide_key, fragments in expectations.items():
+        guide = PAPER_GUIDES[guide_key]
+        source = (NOTEBOOKS / guide.part / guide.filename).read_text(encoding="utf-8")
+        assert "\t" not in source and "\r" not in source
+        assert r"\(" in source
+        assert source.count("mo.ui.") >= 3
+        assert "exercise_block(" in source
+        assert "paper_guide_footer(" in source
+        for fragment in fragments:
+            assert fragment in source
+    variants = PAPER_GUIDES["vae_variants_landmarks"]
+    variants_source = (
+        NOTEBOOKS / variants.part / variants.filename
+    ).read_text(encoding="utf-8")
+    assert r"\[" in variants_source
+    assert r"\mathcal L_K" in variants_source
+    assert r"p_\theta(y,z\mid x)" in variants_source
+
+
+def test_diffusion_paper_guides_form_navigation_bridge():
+    first_guide = PAPER_GUIDES["diffusion_lineage"]
+    second_guide = PAPER_GUIDES["ddpm_original"]
+    first_path = NOTEBOOKS / first_guide.part / first_guide.filename
+    second_path = NOTEBOOKS / second_guide.part / second_guide.filename
+
+    from_chapter_eighteen = chapter_navigation(CHAPTERS[18])._repr_html_()
+    from_chapter_nineteen = chapter_navigation(CHAPTERS[19])._repr_html_()
+    first_navigation = paper_guide_navigation(first_guide)._repr_html_()
+    second_navigation = paper_guide_navigation(second_guide)._repr_html_()
+
+    assert f'href="?file={first_path}"' in from_chapter_eighteen
+    assert f'href="?file={second_path}"' in from_chapter_nineteen
+    assert f'href="?file={second_path}"' in first_navigation
+    assert f'href="?file={first_path}"' in second_navigation
+    assert f'href="?file={NOTEBOOKS / CHAPTERS[19].part / CHAPTERS[19].filename}"' in second_navigation
+
+
+def test_diffusion_paper_guides_are_interactive_rigorous_and_source_grounded():
+    expectations = {
+        "diffusion_lineage": (
+            "条件得分不等于边缘得分",
+            "Fisher identity",
+            "finite_difference_gradient",
+        ),
+        "ddpm_original": (
+            "式 (4) 严格推导",
+            "simple loss",
+            "ddpm_posterior_mean_variance",
+        ),
+    }
+    for guide_key, fragments in expectations.items():
+        guide = PAPER_GUIDES[guide_key]
+        source = (NOTEBOOKS / guide.part / guide.filename).read_text(encoding="utf-8")
+        assert "\t" not in source and "\r" not in source
+        assert source.count("mo.ui.") >= 3
+        assert "exercise_block(" in source
+        assert "paper_guide_footer(" in source
+        for fragment in fragments:
+            assert fragment in source
+
+
+def test_ddim_and_diffusion_variant_paper_guides_form_navigation_bridges():
+    ddim_guide = PAPER_GUIDES["ddim_original"]
+    variants_guide = PAPER_GUIDES["diffusion_variants_landmarks"]
+    sde_guide = PAPER_GUIDES["score_sde_original"]
+
+    ddim_path = NOTEBOOKS / ddim_guide.part / ddim_guide.filename
+    variants_path = NOTEBOOKS / variants_guide.part / variants_guide.filename
+    sde_path = NOTEBOOKS / sde_guide.part / sde_guide.filename
+
+    assert f'href="?file={ddim_path}"' in chapter_navigation(CHAPTERS[20])._repr_html_()
+    assert f'href="?file={ddim_path}"' in chapter_navigation(CHAPTERS[21])._repr_html_()
+    assert f'href="?file={variants_path}"' in chapter_navigation(CHAPTERS[26])._repr_html_()
+    assert f'href="?file={sde_path}"' in paper_guide_navigation(variants_guide)._repr_html_()
+    assert f'href="?file={variants_path}"' in paper_guide_navigation(sde_guide)._repr_html_()
+    assert f'href="?file={NOTEBOOKS / CHAPTERS[27].part / CHAPTERS[27].filename}"' in paper_guide_navigation(sde_guide)._repr_html_()
+
+
+def test_new_paper_guides_use_original_evidence_with_legends_and_boundaries():
+    guide_keys = (
+        "vae_autoencoder_lineage",
+        "vae_aevb",
+        "vae_variants_landmarks",
+        "ddim_original",
+        "diffusion_variants_landmarks",
+        "score_sde_original",
+        "flow_matching_lineage",
+        "flow_matching_rectified_flow",
+    )
+    for guide_key in guide_keys:
+        guide = PAPER_GUIDES[guide_key]
+        source = (NOTEBOOKS / guide.part / guide.filename).read_text(encoding="utf-8")
+        assert "paper_evidence_block(" in source
+        assert "original_quote=" in source
+        assert "figure_path=" in source
+        assert "legend=(" in source
+        assert "learning_goal=" in source
+        assert "evidence_boundary=" in source
+        assert source.count("mo.ui.") >= 3
+        assert "exercise_block(" in source
+
+    asset_paths = (
+        "assets/paper_figures/vae/hinton_figure1_autoencoder.webp",
+        "assets/paper_figures/vae/aevb_figure1_graphical_model.webp",
+        "assets/paper_figures/vae/aevb_figure4_manifold.webp",
+        "assets/paper_figures/vae/vq_vae_figure1_architecture.webp",
+        "assets/paper_figures/vae/normalizing_flows_figure1.webp",
+        "assets/paper_figures/ddim/figure1_graphical_models.webp",
+        "assets/paper_figures/ddim/figure4_speed_quality.webp",
+        "assets/paper_figures/diffusion_variants/cfg_figure2_gaussian_guidance.webp",
+        "assets/paper_figures/diffusion_variants/ldm_figure3_architecture.webp",
+        "assets/paper_figures/diffusion_variants/dit_figure2_scaling.webp",
+        "assets/paper_figures/diffusion_variants/score_sde_figure2_overview.webp",
+        "assets/paper_figures/flow_matching/neural_ode_figure1.webp",
+        "assets/paper_figures/flow_matching/ffjord_figure1.webp",
+        "assets/paper_figures/flow_matching/flow_matching_figures2_3.webp",
+        "assets/paper_figures/flow_matching/rectified_flow_figure2.webp",
+    )
+    for relative_path in asset_paths:
+        assert (ROOT / relative_path).is_file()
+
+
+def test_flow_matching_paper_guides_form_final_navigation_bridge():
+    lineage = PAPER_GUIDES["flow_matching_lineage"]
+    deep_read = PAPER_GUIDES["flow_matching_rectified_flow"]
+    lineage_path = NOTEBOOKS / lineage.part / lineage.filename
+    deep_read_path = NOTEBOOKS / deep_read.part / deep_read.filename
+
+    from_chapter_thirty = chapter_navigation(CHAPTERS[30])._repr_html_()
+    lineage_navigation = paper_guide_navigation(lineage)._repr_html_()
+    deep_read_navigation = paper_guide_navigation(deep_read)._repr_html_()
+
+    assert f'href="?file={lineage_path}"' in from_chapter_thirty
+    assert f'href="?file={deep_read_path}"' in lineage_navigation
+    assert f'href="?file={lineage_path}"' in deep_read_navigation
+    assert "进入下一部分" not in deep_read_navigation
+    assert "返回首页" in deep_read_navigation
 
 
 def test_end_of_chapter_assessment_hides_answers_until_requested():

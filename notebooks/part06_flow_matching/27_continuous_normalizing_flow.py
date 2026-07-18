@@ -132,15 +132,23 @@ def _(COLORS,expansion,mo,np,plt,time):
     _theory_var=np.exp(2*expansion.value*time.value)
     _log_density_change=-expansion.value*time.value
     _fig,_axes=plt.subplots(1,2,figsize=(9,3.8))
-    _axes[0].hist(_x0,bins=35,density=True,alpha=.4,label="p0",color=COLORS["data"])
-    _axes[0].hist(_xt,bins=35,density=True,alpha=.4,label="pt",color=COLORS["model"]);_axes[0].legend(fontsize=8)
+    _axes[0].hist(_x0,bins=35,density=True,alpha=.4,label="初始密度 p₀",color=COLORS["data"])
+    _axes[0].hist(_xt,bins=35,density=True,alpha=.4,label=r"时刻 t 的密度 $p_t$",color=COLORS["model"])
+    _axes[0].set(xlabel="状态 x",ylabel="经验密度",title="粒子群的密度变化");_axes[0].legend(fontsize=8)
     _grid=np.linspace(-2,2,20);_axes[1].quiver(_grid,np.zeros_like(_grid),expansion.value*_grid,np.zeros_like(_grid),angles="xy",scale_units="xy",scale=1,color=COLORS["prior"])
-    _axes[1].set_ylim(-.5,.5);_axes[1].set_title("v(x)=a x")
+    _axes[1].set_ylim(-.5,.5);_axes[1].set(xlabel="状态 x",ylabel="仅为排版的纵向位置",title="紫色箭头：v(x)=a x")
     _fig.tight_layout()
     mo.vstack([mo.md(fr"""## 解析 ODE 验证
 
     \(x_t=e^{{at}}x_0\)。理论 variance={_theory_var:.4f}，
-    样本 variance={_xt.var():.4f}；单维 log-density change={_log_density_change:.4f}。"""),mo.hstack([expansion,time],widths="equal"),_fig])
+    样本 variance={_xt.var():.4f}；单维 log-density change={_log_density_change:.4f}。
+
+    **图例与观察任务：**左图蓝色是初始样本密度，绿色是 ODE 运输后的密度；
+    右图紫色箭头表示局部速度，箭头向外时分布变宽、向内时分布收缩。
+    先判断 (a) 的符号，再预测方差与 log-density 如何变化，然后拖动验证。
+
+    直方图只提供有限样本数值核验；(x_t=e^{{at}}x_0) 与密度变化公式来自解析推导，
+    不能用两张直方图的视觉相似代替证明。"""),mo.hstack([expansion,time],widths="equal"),_fig])
     return
 
 

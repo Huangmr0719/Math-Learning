@@ -131,8 +131,10 @@ def _(COLORS, beta, capacity, mo, np, plt):
     _axes[0].axvline(capacity.value, linestyle="--", color=COLORS["muted"])
     _axes[0].legend(fontsize=8)
     _axes[0].set_xlabel("toy latent 信息量")
+    _axes[0].set_ylabel("toy loss")
     _axes[1].bar(["recon", "beta × KL"], [_current_recon, beta.value * _current_kl], color=[COLORS["data"], COLORS["prior"]])
     _axes[1].set_title(f"total={_current_recon + beta.value * _current_kl:.3f}")
+    _axes[1].set_ylabel("对 total loss 的贡献")
     _fig.tight_layout()
     mo.vstack([mo.md(fr"""## 交互验证
 

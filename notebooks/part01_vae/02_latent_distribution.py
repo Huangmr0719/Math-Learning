@@ -156,10 +156,16 @@ def _(COLORS, mo, mu_slider, np, plt, sigma_slider):
     _ax1.plot(_x, _density, color=COLORS["prior"], linewidth=2)
     _ax1.fill_between(_x, _density, alpha=0.2, color=COLORS["prior"])
     _ax1.axvline(_mu, color=COLORS["model"], linestyle="--", label="mu")
+    _ax1.set_xlabel("z")
+    _ax1.set_ylabel("概率密度 p(z)")
     _ax1.set_title(f"Gaussian density，数值面积 ≈ {_area:.4f}")
     _ax1.legend()
     _ax2.hist(_samples, bins=25, density=True, color=COLORS["data"], alpha=0.7)
+    _ax2.axvline(_mu, color=COLORS["model"], linestyle="--", label="理论均值 mu")
+    _ax2.set_xlabel("采样值 z")
+    _ax2.set_ylabel("归一化频率")
     _ax2.set_title("固定随机种子的 500 次采样")
+    _ax2.legend(fontsize=8)
 
     mo.vstack(
         [

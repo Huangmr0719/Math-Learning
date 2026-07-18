@@ -2,6 +2,7 @@ import re
 from pathlib import Path
 
 from src.teaching.catalog import CHAPTERS, PARTS
+from src.teaching.paper_guides import PAPERS, PAPER_GUIDES, PAPER_GUIDES_AFTER_CHAPTER
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,6 +31,86 @@ def test_formal_notebook_set_exactly_matches_catalog():
         for path in (ROOT / "notebooks").glob("part*/*.py")
     }
     assert actual == expected
+
+
+def test_paper_guides_are_nonnumeric_part_end_supplements():
+    identities = []
+    for key, guide in PAPER_GUIDES.items():
+        assert guide.key == key
+        assert guide.after_chapter in CHAPTERS
+        assert CHAPTERS[guide.after_chapter].part == guide.part
+        assert Path(guide.filename).parent.name == "paper_guides"
+        path = ROOT / "notebooks" / guide.part / guide.filename
+        assert path.is_file(), f"论文导读不存在：{path}"
+        assert guide.order >= 1
+        assert guide.paper_keys
+        assert all(paper_key in PAPERS for paper_key in guide.paper_keys)
+        identities.append((guide.part, guide.filename))
+    assert len(identities) == len(set(identities))
+    for chapter, guides in PAPER_GUIDES_AFTER_CHAPTER.items():
+        assert tuple(guide.order for guide in guides) == tuple(
+            sorted(guide.order for guide in guides)
+        )
+        assert all(guide.after_chapter == chapter for guide in guides)
+
+
+def test_paper_catalog_has_primary_sources_and_reading_targets():
+    assert len(PAPERS) >= 36
+    assert sum(paper.primary for paper in PAPERS.values()) >= 35
+    for key, paper in PAPERS.items():
+        assert paper.key == key
+        assert paper.title and paper.chinese_title
+        assert paper.url.startswith("https://")
+        assert len(paper.reading_targets) >= 3
+        assert all(1 <= chapter <= 30 for chapter in paper.chapters)
+
+
+def test_diffusion_chapters_have_primary_paper_coordinates():
+    for chapter in range(14, 19):
+        relevant = [paper for paper in PAPERS.values() if chapter in paper.chapters]
+        assert relevant, f"第 {chapter} 章缺少论文坐标"
+        assert any(paper.primary for paper in relevant)
+
+    assert set(PAPER_GUIDES["diffusion_lineage"].paper_keys) >= {
+        "diffusion_thermodynamics",
+        "ncsn",
+        "ddpm",
+    }
+    assert PAPER_GUIDES["ddpm_original"].paper_keys[0] == "ddpm"
+
+
+def test_ddim_and_diffusion_variant_chapters_have_primary_paper_coordinates():
+    for chapter in range(19, 27):
+        relevant = [paper for paper in PAPERS.values() if chapter in paper.chapters]
+        assert relevant, f"第 {chapter} 章缺少论文坐标"
+        assert any(paper.primary for paper in relevant)
+
+    assert PAPER_GUIDES["ddim_original"].paper_keys[0] == "ddim"
+    assert set(PAPER_GUIDES["diffusion_variants_landmarks"].paper_keys) >= {
+        "classifier_free_guidance",
+        "latent_diffusion",
+        "dit",
+        "dpm_solver",
+        "score_sde",
+    }
+    assert PAPER_GUIDES["score_sde_original"].paper_keys == ("score_sde",)
+
+
+def test_flow_matching_chapters_have_primary_paper_coordinates():
+    for chapter in range(27, 31):
+        relevant = [paper for paper in PAPERS.values() if chapter in paper.chapters]
+        assert relevant, f"第 {chapter} 章缺少论文坐标"
+        assert any(paper.primary for paper in relevant)
+
+    assert set(PAPER_GUIDES["flow_matching_lineage"].paper_keys) == {
+        "neural_ode",
+        "ffjord",
+        "flow_matching",
+    }
+    assert PAPER_GUIDES["flow_matching_rectified_flow"].paper_keys == (
+        "flow_matching",
+        "rectified_flow",
+    )
 
 
 def test_chapter_numbers_match_catalog_filenames_and_headers():

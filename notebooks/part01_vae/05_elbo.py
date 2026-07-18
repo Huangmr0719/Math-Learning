@@ -183,13 +183,15 @@ def _(COLORS, kl_discrete, mo, np, plt, q_z1):
     _gap = kl_discrete(_q, _posterior)
 
     _fig, _ax = plt.subplots(figsize=(8, 4))
-    _ax.bar(
-        ["ELBO", "posterior KL gap", "log p(x)"],
-        [_elbo, _gap, _log_evidence],
-        color=[COLORS["data"], COLORS["model"], COLORS["success"]],
-    )
+    # 第一列把 ELBO 与 gap 叠加；顶端应和第二列的 log p(x) 对齐。
+    # 这样视觉结构直接对应恒等式，而不是把三项画成互不相关的柱子。
+    _ax.bar(["ELBO + gap"], [_elbo], color=COLORS["data"], label="ELBO")
+    _ax.bar(["ELBO + gap"], [_gap], bottom=[_elbo], color=COLORS["model"], label="posterior KL gap")
+    _ax.bar(["log p(x)"], [_log_evidence], color=COLORS["success"], label="log evidence")
     _ax.axhline(0, color="black", linewidth=0.8)
+    _ax.set_ylabel("自然对数尺度")
     _ax.set_title("恒等式检查：ELBO + gap = log p(x)")
+    _ax.legend(fontsize=8)
 
     mo.vstack(
         [

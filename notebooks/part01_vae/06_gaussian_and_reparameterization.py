@@ -197,6 +197,8 @@ def _(
     _ax.plot(_x, _p_density, label="prior N(0,1)", color=COLORS["prior"])
     _ax.plot(_x, _q_density, label="q(z|x)", color=COLORS["data"])
     _ax.hist(_samples, bins=35, density=True, alpha=0.2, color=COLORS["data"])
+    _ax.set_xlabel("z")
+    _ax.set_ylabel("概率密度")
     _ax.legend()
     _ax.set_title("同一批 epsilon 经平移和缩放得到 q 样本")
 

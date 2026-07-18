@@ -116,15 +116,19 @@ def _(COLORS,compute,mo,np,plt,priority):
     _feasible=_scores-np.maximum(0,_cost-compute.value)
     _best=int(np.argmax(_feasible))
     _fig,_axes=plt.subplots(1,2,figsize=(9,3.8))
-    _axes[0].bar(_names,_scores,color=[COLORS["data"],COLORS["model"],COLORS["prior"]]);_axes[0].set_title("toy task suitability")
+    _axes[0].bar(_names,_scores,color=[COLORS["data"],COLORS["model"],COLORS["prior"]]);_axes[0].set(title="手工设定的 toy 任务适配分",ylabel="toy score（越高越匹配当前优先级）")
     _axes[1].scatter(_cost,_scores,s=120,color=[COLORS["data"],COLORS["model"],COLORS["prior"]])
     for _i,_name in enumerate(_names):_axes[1].text(_cost[_i]+.1,_scores[_i],_name)
-    _axes[1].axvline(compute.value,linestyle="--",color=COLORS["danger"]);_axes[1].set_xlabel("toy sampling cost")
+    _axes[1].axvline(compute.value,linestyle="--",color=COLORS["danger"],label="当前计算预算");_axes[1].set(xlabel="手工设定的 toy 采样成本",ylabel="toy task score",title="适配度—预算坐标");_axes[1].legend(fontsize=8)
     _fig.tight_layout()
     mo.vstack([mo.md(fr"""## 模型选择不是排行榜
 
     当前 toy 规则推荐 **{_names[_best]}**。这只是迫使我们明确任务与预算；
-    真实选择还需要数据规模、条件类型、likelihood、编辑能力和现有生态证据。"""),mo.hstack([priority,compute],widths="equal"),_fig])
+    真实选择还需要数据规模、条件类型、likelihood、编辑能力和现有生态证据。
+
+    **图例与证据边界：**蓝/绿/紫分别表示 VAE、Diffusion、Flow Matching；右图红虚线是
+    当前 toy 预算。所有分数与成本都是课程为了练习决策而手工设定的量，不是论文 benchmark，
+    不能用来声称某个模型家族普遍优于另一个。学习任务是先改变需求，再解释推荐为何变化。"""),mo.hstack([priority,compute],widths="equal"),_fig])
     return
 
 

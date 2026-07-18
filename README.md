@@ -75,12 +75,18 @@ Math-Learning/
 │
 ├── notebooks/                   # 唯一维护的教学正文
 │   ├── 00_home.py               # 课程首页
-│   ├── part01_vae/              # 第 1–7 章
-│   ├── part02_vae_variants/     # 第 8–13 章
-│   ├── part03_diffusion_ddpm/   # 第 14–18 章
-│   ├── part04_ddim/             # 第 19–20 章
-│   ├── part05_diffusion_variants/ # 第 21–26 章
-│   └── part06_flow_matching/    # 第 27–30 章
+│   ├── part01_vae/              # 第 1–7 章与部分末经典论文导读
+│   │   └── paper_guides/        # 自编码器谱系与 AEVB 原文深读
+│   ├── part02_vae_variants/     # 第 8–13 章与变体论文研讨
+│   │   └── paper_guides/        # 六类缺口、九篇代表论文
+│   ├── part03_diffusion_ddpm/   # 第 14–18 章与扩散/DDPM 论文导读
+│   │   └── paper_guides/        # 扩散谱系与 DDPM 原文深读
+│   ├── part04_ddim/             # 第 19–20 章与 DDIM 原文深读
+│   │   └── paper_guides/        # DDIM 路径、速度证据与 inversion 边界
+│   ├── part05_diffusion_variants/ # 第 21–26 章与两篇论文导读
+│   │   └── paper_guides/        # 六层设计研讨与 Score-SDE 原文深读
+│   └── part06_flow_matching/    # 第 27–30 章与两篇论文导读
+│       └── paper_guides/        # CNF 谱系、Flow Matching 与 Rectified Flow 深读
 │
 ├── src/
 │   ├── teaching/                # 章节目录和公共教学组件
@@ -114,6 +120,44 @@ Math-Learning/
 | DDIM | 19–20 | 同一训练网络为什么可以采用更快、确定性的采样路径？ |
 | Diffusion 变体 | 21–26 | 预测什么、如何控制、在哪里扩散、怎样连续化？ |
 | Flow Matching | 27–30 | 怎样直接学习把噪声运输到数据的速度场？ |
+
+每个课程部分结束后可设置一个或多个不占用正式章号的“经典论文导读”。导读不是论文摘要，
+而是把原文问题、中文意译、关键推导、图形解释、代码映射、数值验证与批判性阅读
+组织成 marimo 专题站。VAE 与 VAE 变体部分现已形成三站论文路线：
+
+```text
+AE / DAE / CAE 与 VAE 的思想边界
+→ AEVB 原文逐式深读
+→ β-VAE、坍塌、IWAE、CVAE、VQ-VAE、Flow 的多论文研讨
+```
+
+Diffusion/DDPM 部分形成两站路线：
+
+```text
+扩散概率链与得分匹配的历史、数学会合
+→ DDPM 原文式 (1)–(14) 与算法 1–2 的逐式深读
+→ 带着“采样路径是否唯一”的问题进入 DDIM
+```
+
+DDIM 与扩散变体继续形成三站路线：
+
+```text
+DDIM 原文：非马尔可夫路径、速度—质量与 inversion 边界
+→ CFG / LDM / DiT / Solver 等六层设计研讨
+→ Score-SDE 与 probability flow ODE 的同边缘、不同轨迹
+→ 进入 Flow Matching，直接学习速度场
+```
+
+Flow Matching 部分以两站收束整门课程：
+
+```text
+Neural ODE → FFJORD → Flow Matching：表示、trace 与训练信号的三次变化
+→ Flow Matching / Rectified Flow：条件路径、边缘速度、coupling、rewiring 与 reflow
+```
+
+第 1–30 章开头还会按当前知识点显示“论文坐标”，给出通用中文译名、原题、
+作者版本以及建议定点阅读的式号、图和实验。它用于学完正文后的原文复核，不要求
+初学者在进入章节前先通读论文。
 
 ## 教学内容与参考资料的边界
 
@@ -166,6 +210,10 @@ marimo export html notebooks/part01_vae/04_kl_divergence.py \
 - 已完成第二轮数学与教学审查。
 - 关键数学主张具有自动测试或 notebook 数值验证。
 - 30 个正式章节已逐一完成带执行结果的 HTML 导出与 marimo 特性验收。
+- 第 1–30 章已接入 VAE、Diffusion 与 Flow Matching 论文坐标，并完成十个部分末论文导读。
+- 论文导读采用原文短引和少量原图节选；每张图必须解释图例、学习任务和证据边界。
+- 第一部分已完成自编码器谱系与 *Auto-Encoding Variational Bayes* 两个交互式导读。
+- 第二部分已完成覆盖九篇代表论文的 VAE 变体交互式研讨。
 - 正式 HTML 批量发布仍属于后续工作。
 
 ## 阅读建议

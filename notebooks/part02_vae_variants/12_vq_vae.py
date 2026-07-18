@@ -119,15 +119,20 @@ def _(COLORS, encoder_x, encoder_y, mo, np, plt):
     _index = int(np.argmin(_distances))
     _quantized = _codebook[_index]
     _fig, _axes = plt.subplots(1, 2, figsize=(9, 3.8))
-    _axes[0].scatter(_codebook[:,0], _codebook[:,1], s=100, color=COLORS["prior"])
+    _axes[0].scatter(_codebook[:,0], _codebook[:,1], s=100, color=COLORS["prior"], label="codebook e_k")
     for _i, _point in enumerate(_codebook):
         _axes[0].text(_point[0]+0.05, _point[1]+0.05, f"e{_i}")
     _axes[0].scatter(*_z, s=100, marker="x", color=COLORS["danger"], label="z_e")
     _axes[0].plot([_z[0],_quantized[0]], [_z[1],_quantized[1]], "--", color=COLORS["model"])
+    _axes[0].scatter(*_quantized, s=180, facecolors="none", edgecolors=COLORS["success"], linewidths=2, label="选中的 e_k")
+    _axes[0].set_xlabel("embedding 第 1 维")
+    _axes[0].set_ylabel("embedding 第 2 维")
     _axes[0].legend(fontsize=8)
     _axes[0].set_xlim(-3,3); _axes[0].set_ylim(-3,3)
     _axes[1].bar([f"e{i}" for i in range(len(_codebook))], _distances, color=[COLORS["success"] if i==_index else COLORS["data"] for i in range(len(_codebook))])
     _axes[1].set_title("squared distance")
+    _axes[1].set_xlabel("codebook 索引")
+    _axes[1].set_ylabel("||z_e-e_k||²")
     _fig.tight_layout()
     mo.vstack([mo.md(fr"""## 量化边界交互
 

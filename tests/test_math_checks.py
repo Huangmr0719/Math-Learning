@@ -13,6 +13,7 @@ from src.math_checks import (
     normalize_distribution,
     ornstein_uhlenbeck_variance,
     simulate_ornstein_uhlenbeck,
+    stable_logmeanexp,
 )
 
 
@@ -63,6 +64,25 @@ def test_compare_values_reports_tolerance():
     report = compare_values(1.0, 1.005, tolerance=0.01)
     assert report.within_tolerance
     assert np.isclose(report.absolute_error, 0.005)
+
+
+def test_iwae_logmeanexp_recovers_elbo_at_one_sample():
+    log_weights = np.array([[-2.0, -0.5, 0.7]])  # [K=1, B=3]
+    per_example = stable_logmeanexp(log_weights, axis=0)
+    assert np.allclose(per_example, log_weights[0])
+
+
+def test_iwae_toy_bound_tightens_in_monte_carlo_expectation():
+    """Numerically support, but do not replace, the IWAE monotonicity proof."""
+
+    rng = np.random.default_rng(19)
+    log_weights = rng.normal(-0.5, 1.0, size=(80_000, 32))
+    estimates = [
+        float(np.mean(stable_logmeanexp(log_weights[:, :k], axis=1)))
+        for k in (1, 4, 16, 32)
+    ]
+    assert estimates[0] < estimates[1] < estimates[2] < estimates[3] < 0.0
+    assert estimates[-1] > -0.03
 
 
 def test_ornstein_uhlenbeck_euler_maruyama_matches_theory():

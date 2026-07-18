@@ -16,6 +16,7 @@ def _():
     import marimo as mo
     from src.teaching import (
         CHAPTERS,
+        PAPER_GUIDES,
         PARTS,
         course_map_table,
         course_styles,
@@ -24,6 +25,7 @@ def _():
 
     return (
         CHAPTERS,
+        PAPER_GUIDES,
         PARTS,
         course_map_table,
         course_styles,
@@ -99,13 +101,16 @@ def _(PARTS, mo):
 
 
 @app.cell
-def _(CHAPTERS, PARTS, completed_through, course_map_table, mo, part_filter):
+def _(CHAPTERS, PAPER_GUIDES, PARTS, completed_through, course_map_table, mo, part_filter):
     _sections = []
     for _part_key, _part_title in PARTS.items():
         if part_filter.value != "all" and _part_key != part_filter.value:
             continue
-        _rows = [
-            {
+        _rows = []
+        for _spec in CHAPTERS.values():
+            if _spec.part != _part_key:
+                continue
+            _rows.append({
                 "章节": f"{_spec.number:02d}",
                 "标题": _spec.title,
                 "学习进度": (
@@ -116,12 +121,44 @@ def _(CHAPTERS, PARTS, completed_through, course_map_table, mo, part_filter):
                     else "未开始"
                 ),
                 "入口": f"./{_spec.part}/{_spec.filename}",
-            }
-            for _spec in CHAPTERS.values()
-            if _spec.part == _part_key
-        ]
+            })
+            _matching_guides = sorted(
+                (
+                    _guide
+                    for _guide in PAPER_GUIDES.values()
+                    if _guide.after_chapter == _spec.number
+                ),
+                key=lambda _guide: _guide.order,
+            )
+            for _guide_index, _guide in enumerate(_matching_guides, start=1):
+                _rows.append(
+                    {
+                        "章节": (
+                            f"论文导读 {_guide_index}/{len(_matching_guides)}"
+                            if len(_matching_guides) > 1
+                            else "论文导读"
+                        ),
+                        "标题": _guide.title,
+                        "学习进度": (
+                            "可开始"
+                            if completed_through.value >= _guide.after_chapter
+                            else f"第 {_guide.after_chapter} 章后"
+                        ),
+                        "入口": f"./{_guide.part}/{_guide.filename}",
+                    }
+                )
         _sections.append(course_map_table(_part_title, _rows))
-    if completed_through.value < 30:
+    _next_guide = next(
+        (
+            _guide
+            for _guide in PAPER_GUIDES.values()
+            if _guide.after_chapter == completed_through.value
+        ),
+        None,
+    )
+    if _next_guide is not None:
+        _next_message = f"建议下一步：**{_next_guide.title}**。"
+    elif completed_through.value < 30:
         _next_spec = CHAPTERS[completed_through.value + 1]
         _next_message = f"建议下一步：**第 {_next_spec.number} 章 · {_next_spec.title}**。"
     else:

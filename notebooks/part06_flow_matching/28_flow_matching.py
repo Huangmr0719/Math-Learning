@@ -137,10 +137,10 @@ def _(COLORS,conditional_squared_error,mo,np,plt,velocity_guess):
         _targets,_probabilities,velocity_guess.value
     )
     _fig,_ax=plt.subplots(figsize=(7,3.8))
-    _ax.plot(_grid,_losses,color=COLORS["model"])
+    _ax.plot(_grid,_losses,color=COLORS["model"],label="期望平方误差")
     _ax.axvline(_conditional_mean,color=COLORS["success"],linestyle="--",label="conditional mean")
     _ax.scatter([velocity_guess.value],[_current],color=COLORS["danger"],zorder=3,label="current prediction")
-    _ax.set_xlabel("prediction a");_ax.set_ylabel("expected squared error");_ax.legend(fontsize=8)
+    _ax.set_xlabel("候选预测 a");_ax.set_ylabel("条件期望平方误差");_ax.set_title("MSE 最低点对应条件平均");_ax.legend(fontsize=8)
     _fig.tight_layout()
     mo.vstack([mo.md(fr"""### 条件期望的手算与交互验证
 
@@ -154,7 +154,11 @@ def _(COLORS,conditional_squared_error,mo,np,plt,velocity_guess):
 
     当前预测 \(a={velocity_guess.value:.1f}\)，期望平方误差为
     {_current:.3f}。拖动预测值，最低点始终位于条件平均；这是解析结论的
-    数值展示，不是对一般定理的证明。"""),velocity_guess,_fig])
+    数值展示，不是对一般定理的证明。
+
+    **图例与任务：**蓝线是所有候选预测的理论条件 MSE，绿虚线是条件平均，
+    红点是当前滑块预测。先预测红点应向哪边移动，再验证最低点是否与绿线重合。
+    这张图只核验当前二点分布；一般结论来自上面的正交分解。"""),velocity_guess,_fig])
     return
 
 
@@ -171,15 +175,20 @@ def _(COLORS,flow_t,mo,np,plt,sample_pair):
     _x1=np.array([[2,1],[2,-1],[1.5,0],[2,-.5],[1,1.5],[1,-1.5],[2,0],[1.5,-.8]],float)
     _xt=(1-flow_t.value)*_x0+flow_t.value*_x1;_u=_x1-_x0;_i=sample_pair.value
     _fig,_axes=plt.subplots(1,2,figsize=(9,3.8))
-    for _j in range(len(_x0)):_axes[0].plot([_x0[_j,0],_x1[_j,0]],[_x0[_j,1],_x1[_j,1]],color=COLORS["muted"],alpha=.4)
-    _axes[0].scatter(_xt[:,0],_xt[:,1],color=COLORS["data"]);_axes[0].quiver(_xt[:,0],_xt[:,1],_u[:,0],_u[:,1],angles="xy",scale_units="xy",scale=5,color=COLORS["model"])
-    _axes[0].set_aspect("equal")
-    _axes[1].plot(np.linspace(0,1,20),np.tile(np.linalg.norm(_u[_i]),20),color=COLORS["prior"]);_axes[1].set_title(f"pair {_i} speed magnitude")
+    for _j in range(len(_x0)):_axes[0].plot([_x0[_j,0],_x1[_j,0]],[_x0[_j,1],_x1[_j,1]],color=COLORS["muted"],alpha=.4,label="条件直线路径" if _j==0 else None)
+    _axes[0].scatter(_xt[:,0],_xt[:,1],color=COLORS["data"],label="时刻 t 的粒子");_axes[0].quiver(_xt[:,0],_xt[:,1],_u[:,0],_u[:,1],angles="xy",scale_units="xy",scale=5,color=COLORS["model"],label="条件速度")
+    _axes[0].set_aspect("equal");_axes[0].set(xlabel="x₁",ylabel="x₂",title="二维条件路径切片");_axes[0].legend(fontsize=7)
+    _axes[1].plot(np.linspace(0,1,20),np.tile(np.linalg.norm(_u[_i]),20),color=COLORS["prior"],label=f"pair {_i} 的速度大小");_axes[1].set(xlabel="时间 t",ylabel=r"$\|u_t\|_2$",title="线性路径的速度大小");_axes[1].legend(fontsize=8)
     _fig.tight_layout()
     mo.vstack([mo.md(fr"""## 条件路径动画帧
 
     pair {_i}: \(x_t={_xt[_i]}\)，conditional velocity={_u[_i]}。
-    拖动 t 观察粒子沿直线移动；速度不随 t 变是线性 path 的特性。"""),mo.hstack([flow_t,sample_pair],widths="equal"),_fig])
+    拖动 t 观察粒子沿直线移动；速度不随 t 变是线性 path 的特性。
+
+    **图例与任务：**左图灰线是完整条件路径、蓝点是当前位置、绿箭头是条件速度；
+    右图紫线只显示所选 pair 的速度大小。先拖动 t，再切换 pair，区分“同一 pair
+    速度恒定”和“不同 pair 速度可以不同”。这是人工端点的路径示意，不代表训练后的
+    marginal velocity 必然恒定。"""),mo.hstack([flow_t,sample_pair],widths="equal"),_fig])
     return
 
 

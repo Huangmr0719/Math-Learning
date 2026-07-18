@@ -35,6 +35,7 @@ def test_reference_material_is_not_mixed_into_project_root():
 def test_local_vae_papers_are_centralized_and_unique():
     paper_directory = ROOT / "references/papers/vae"
     expected = {
+        "auto-encoding-variational-bayes.pdf",
         "from-autoencoder-to-beta-vae.pdf",
         "an-introduction-to-variational-autoencoders.pdf",
         "tutorial-on-variational-autoencoders.pdf",

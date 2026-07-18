@@ -140,9 +140,13 @@ def _(COLORS, mo, np, plt, resample_seed, sample_count):
     _axes[0].bar(np.arange(len(_weights)), _weights, color=COLORS["data"])
     _axes[0].axhline(_evidence, linestyle="--", color=COLORS["success"], label="p(x)")
     _axes[0].set_title("本次 importance weights")
+    _axes[0].set_xlabel("posterior 样本编号 k")
+    _axes[0].set_ylabel("importance weight w_k")
     _axes[0].legend(fontsize=8)
     _axes[1].plot(range(1, 101), _trials, color=COLORS["model"], label="E[L_K] Monte Carlo")
     _axes[1].axhline(np.log(_evidence), linestyle="--", color=COLORS["success"], label="log p(x)")
+    _axes[1].set_xlabel("importance samples K")
+    _axes[1].set_ylabel("期望下界（Monte Carlo）")
     _axes[1].legend(fontsize=8)
     _fig.tight_layout()
     mo.vstack([mo.md(fr"""## 交互实验

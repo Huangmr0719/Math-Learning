@@ -22,6 +22,7 @@ from src.math_checks import (  # noqa: E402
     gaussian_kl_standard_normal,
     ornstein_uhlenbeck_variance,
     simulate_ornstein_uhlenbeck,
+    stable_logmeanexp,
 )
 
 
@@ -109,11 +110,28 @@ def ou_sde_demo() -> None:
     )
 
 
+def iwae_bound_demo() -> None:
+    """Check a toy IWAE bound where E[w]=1 and log p(x)=0."""
+
+    rng = np.random.default_rng(19)
+    log_weights = rng.normal(-0.5, 1.0, size=(100_000, 64))
+    estimates = {
+        k: float(np.mean(stable_logmeanexp(log_weights[:, :k], axis=1)))
+        for k in (1, 4, 16, 64)
+    }
+    print(
+        "iwae-bound:",
+        " ".join(f"L_{k}={value:.6f}" for k, value in estimates.items()),
+        "target-log-evidence=0.000000",
+    )
+
+
 DEMOS = {
     "gaussian-kl": gaussian_kl_demo,
     "softmax-grad": softmax_gradient_demo,
     "score-gaussian": gaussian_score_demo,
     "ou-sde": ou_sde_demo,
+    "iwae-bound": iwae_bound_demo,
 }
 
 

@@ -92,7 +92,7 @@ def _(derivation_map, mo):
 
 @app.cell
 def _(mo):
-    warp = mo.ui.slider(-0.8, 1.5, value=0.6, step=0.1, show_value=True, label="warp a in z=u+a*tanh(u)")
+    warp = mo.ui.slider(-0.98, 1.5, value=0.6, step=0.02, show_value=True, label="warp a in z=u+a*tanh(u)")
     return (warp,)
 
 
@@ -106,11 +106,14 @@ def _(COLORS, mo, np, plt, warp):
     _mass_u = np.trapz(_p_u, _u)
     _mass_z = np.trapz(_p_z, _z)
     _fig, _axes = plt.subplots(1,2,figsize=(10,3.8))
-    _axes[0].plot(_u,_z,color=COLORS["model"])
-    _axes[0].plot(_u,_u,"--",color=COLORS["muted"])
+    _axes[0].plot(_u,_z,color=COLORS["model"], label="z=f(u)")
+    _axes[0].plot(_u,_u,"--",color=COLORS["muted"], label="不变换 z=u")
     _axes[0].set_xlabel("u"); _axes[0].set_ylabel("z=f(u)")
+    _axes[0].legend(fontsize=8)
     _axes[1].plot(_u,_p_u,label="base p(u)",color=COLORS["data"])
     _axes[1].plot(_z,_p_z,label="transformed p(z)",color=COLORS["prior"])
+    _axes[1].set_xlabel("对应坐标 u 或 z")
+    _axes[1].set_ylabel("概率密度")
     _axes[1].legend(fontsize=8)
     _fig.tight_layout()
     mo.vstack([mo.md(fr"""## 密度守恒实验

@@ -14,6 +14,14 @@ from urllib.parse import quote
 import marimo as mo
 
 from .catalog import CHAPTERS, PARTS, ChapterSpec
+from .paper_guides import (
+    PAPERS,
+    PAPER_GUIDES_AFTER_CHAPTER,
+    PAPER_GUIDES_BEFORE_CHAPTER,
+    PaperGuideSpec,
+    PaperSource,
+    papers_for_chapter,
+)
 from .terminology import TERMS, TermSpec, terms_for_chapter
 
 
@@ -82,6 +90,86 @@ def course_styles() -> mo.Html:
             font-size: .82rem;
             font-weight: 700;
           }
+          .gm-paper-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+            gap: .55rem 1rem;
+            margin-top: .9rem;
+            padding-top: .8rem;
+            border-top: 1px solid #d9e2ec;
+            color: var(--gm-muted);
+            font-size: .9rem;
+          }
+          .gm-paper-meta strong { color: var(--gm-ink); }
+          .gm-paper-trail {
+            margin: .1rem 0 .8rem;
+            padding: .85rem 1rem;
+            border: 1px solid #c7d2fe;
+            border-radius: 14px;
+            background: #f5f7ff;
+            color: var(--gm-ink);
+          }
+          .gm-paper-trail > summary {
+            cursor: pointer;
+            color: #3730a3;
+            font-weight: 750;
+          }
+          .gm-paper-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+            gap: .75rem;
+            margin-top: .8rem;
+          }
+          .gm-paper-card {
+            padding: .8rem .9rem;
+            border: 1px solid #d9e2ec;
+            border-radius: 12px;
+            background: var(--gm-paper);
+          }
+          .gm-paper-card h3 { margin: 0 0 .25rem; font-size: .98rem; }
+          .gm-paper-card p { margin: .28rem 0; line-height: 1.55; }
+          .gm-paper-card ul { margin: .35rem 0 0; padding-left: 1.2rem; }
+          .gm-paper-kind {
+            display: inline-block;
+            margin-left: .35rem;
+            padding: .05rem .4rem;
+            border-radius: 999px;
+            background: #e0e7ff;
+            color: #3730a3;
+            font-size: .72rem;
+          }
+          .gm-paper-evidence {
+            padding: 1rem 1.05rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            background: var(--gm-paper);
+          }
+          .gm-paper-evidence h3 { margin: 0 0 .65rem; }
+          .gm-paper-quote {
+            margin: .4rem 0 .75rem;
+            padding: .7rem .85rem;
+            border-left: 4px solid #6366f1;
+            background: #eef2ff;
+            color: var(--gm-ink);
+            font-family: Georgia, serif;
+          }
+          .gm-paper-translation {
+            margin: .45rem 0;
+            color: var(--gm-muted);
+          }
+          .gm-figure-guide {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+            gap: .7rem;
+            margin-top: .6rem;
+          }
+          .gm-figure-guide section {
+            padding: .7rem .8rem;
+            border-radius: 10px;
+            background: #f8fafc;
+          }
+          .gm-figure-guide h4 { margin: 0 0 .35rem; font-size: .9rem; }
+          .gm-figure-guide ul { margin: .2rem 0 0; padding-left: 1.15rem; }
           .gm-course-section { margin-top: 1.2rem; }
           .gm-course-section > h2 {
             margin: 0 0 .55rem;
@@ -356,8 +444,125 @@ def chapter_header(spec: ChapterSpec, *, duration: str = "45–90 分钟") -> mo
                 """
             ),
             *([terminology] if terminology is not None else []),
+            *([chapter_paper_trail(spec)] if papers_for_chapter(spec.number) else []),
         ],
         gap=0.8,
+    )
+
+
+def _paper_card_html(paper: PaperSource) -> str:
+    targets = "".join(f"<li>{escape(target)}</li>" for target in paper.reading_targets)
+    kind = "原始论文" if paper.primary else "辅助教程"
+    local = (
+        f"<p><strong>本地：</strong><code>{escape(paper.local_pdf)}</code></p>"
+        if paper.local_pdf
+        else ""
+    )
+    return f"""
+    <article class="gm-paper-card">
+      <h3>{escape(paper.chinese_title)}<span class="gm-paper-kind">{kind}</span></h3>
+      <p><a href="{escape(paper.url, quote=True)}" target="_blank" rel="noopener noreferrer">
+        {escape(paper.title)}</a></p>
+      <p class="gm-muted">{escape(paper.authors)} · {escape(paper.venue_year)}</p>
+      <p>{escape(paper.role)}</p>
+      <p><strong>带着问题读：</strong></p><ul>{targets}</ul>
+      {local}
+    </article>
+    """
+
+
+def chapter_paper_trail(spec: ChapterSpec) -> mo.Html:
+    """Place a curated primary-source coordinate at the point of need."""
+
+    papers = papers_for_chapter(spec.number)
+    return mo.Html(
+        f"""
+        <details class="gm-paper-trail">
+          <summary>本章论文坐标｜先学正文，再带着问题回到原文（{len(papers)} 篇）</summary>
+          <p>
+            这里不是“必须从头啃完”的书单。第一次学习先完成本章；复习时按卡片列出的
+            式号、图或实验定点阅读，并区分原论文主张与本课程的教学解释。
+          </p>
+          <div class="gm-paper-grid">
+            {''.join(_paper_card_html(paper) for paper in papers)}
+          </div>
+        </details>
+        """
+    )
+
+
+def paper_evidence_block(
+    paper: PaperSource,
+    *,
+    title: str,
+    original_quote: str,
+    chinese_translation: str,
+    figure_path: str = "",
+    figure_number: str = "",
+    figure_caption: str = "",
+    legend: Sequence[str] = (),
+    learning_goal: str,
+    evidence_boundary: str,
+) -> mo.Html:
+    """Render a source-grounded quote/figure card with an explicit reading contract.
+
+    ``original_quote`` should be a short locating excerpt, not a replacement for the
+    paper.  Original figures are stored under ``assets/paper_figures`` and always
+    paired with a legend, a learning goal, and a claim boundary.
+    """
+
+    source = (
+        f'<a href="{escape(paper.url, quote=True)}" target="_blank" '
+        f'rel="noopener noreferrer">{escape(paper.title)}</a>'
+    )
+    heading = f"{figure_number}｜{title}" if figure_number else title
+    legend_items = "".join(f"<li>{escape(item)}</li>" for item in legend)
+    image = None
+    if figure_path:
+        absolute_path = Path(__file__).resolve().parents[2] / figure_path
+        if not absolute_path.is_file():
+            raise FileNotFoundError(f"论文图不存在：{absolute_path}")
+        image = mo.image(
+            str(absolute_path),
+            alt=f"{paper.chinese_title} {figure_number}：{figure_caption}",
+            width="100%",
+            rounded=True,
+            caption=f"{figure_caption}｜原图来源：{paper.authors}，{paper.venue_year}",
+        )
+
+    source_context = mo.Html(
+        f"""
+        <section class="gm-paper-evidence">
+          <h3>{escape(heading)}</h3>
+          <p class="gm-muted"><strong>原始资料：</strong>{source} · {escape(paper.venue_year)}</p>
+          <blockquote class="gm-paper-quote">“{escape(original_quote)}”</blockquote>
+          <p class="gm-paper-translation"><strong>教学性译意：</strong>{escape(chinese_translation)}</p>
+        </section>
+        """
+    )
+    reading_guide = mo.Html(
+        f"""
+        <section class="gm-paper-evidence">
+          <div class="gm-figure-guide">
+            <section>
+              <h4>图例怎么读</h4>
+              <ul>{legend_items or '<li>本卡片没有引用原图，只核对原文主张。</li>'}</ul>
+            </section>
+            <section>
+              <h4>这张图的学习任务</h4>
+              <p>{escape(learning_goal)}</p>
+            </section>
+            <section>
+              <h4>证据边界</h4>
+              <p>{escape(evidence_boundary)}</p>
+            </section>
+          </div>
+        </section>
+        """
+    )
+    return mo.vstack(
+        [source_context, *([image] if image is not None else []), reading_guide],
+        gap=0.7,
     )
 
 
@@ -399,6 +604,7 @@ def course_map_table(
         progress_class = {
             "已完成": "is-done",
             "下一章": "is-next",
+            "可开始": "is-next",
         }.get(progress, "")
         rendered_rows.append(
             f"""
@@ -463,6 +669,9 @@ def chapter_navigation(spec: ChapterSpec) -> mo.Html:
 
     previous_spec = CHAPTERS.get(spec.number - 1)
     next_spec = CHAPTERS.get(spec.number + 1)
+    previous_guide = PAPER_GUIDES_BEFORE_CHAPTER.get(spec.number)
+    next_guides = PAPER_GUIDES_AFTER_CHAPTER.get(spec.number, ())
+    next_guide = next_guides[0] if next_guides else None
 
     def chapter_link(
         target: ChapterSpec,
@@ -488,12 +697,24 @@ def chapter_navigation(spec: ChapterSpec) -> mo.Html:
         """
 
     previous = (
-        chapter_link(previous_spec, direction="is-previous", label="← 上一章")
+        _paper_navigation_link(
+            previous_guide,
+            direction="is-previous",
+            label="← 经典论文导读",
+        )
+        if previous_guide is not None
+        else chapter_link(previous_spec, direction="is-previous", label="← 上一章")
         if previous_spec is not None
         else '<span class="gm-chapter-nav-placeholder" aria-hidden="true"></span>'
     )
     next_link = (
-        chapter_link(next_spec, direction="is-next", label="下一章 →")
+        _paper_navigation_link(
+            next_guide,
+            direction="is-next",
+            label="经典论文导读 →",
+        )
+        if next_guide is not None
+        else chapter_link(next_spec, direction="is-next", label="下一章 →")
         if next_spec is not None
         else '<span class="gm-chapter-nav-placeholder" aria-hidden="true"></span>'
     )
@@ -512,6 +733,129 @@ def chapter_navigation(spec: ChapterSpec) -> mo.Html:
           {next_link}
         </nav>
         """
+    )
+
+
+def _paper_navigation_link(
+    spec: PaperGuideSpec,
+    *,
+    direction: str,
+    label: str,
+) -> str:
+    href = _workspace_notebook_href(f"{spec.part}/{spec.filename}")
+    return f"""
+    <a class="gm-chapter-nav-link {direction}"
+       href="{escape(href, quote=True)}"
+       aria-label="{escape(f'{label}：{spec.title}', quote=True)}">
+      <span class="gm-chapter-nav-label">{escape(label)}</span>
+      <span class="gm-chapter-nav-title">{escape(spec.title)}</span>
+    </a>
+    """
+
+
+def paper_guide_header(
+    spec: PaperGuideSpec,
+    *,
+    duration: str = "90–150 分钟",
+) -> mo.Html:
+    """Render a paper-reading hero without creating another formal chapter number."""
+
+    papers = tuple(PAPERS[key] for key in spec.paper_keys)
+    primary_count = sum(paper.primary for paper in papers)
+    paper_summary = (
+        escape(papers[0].title)
+        if len(papers) == 1
+        else f"{primary_count} 篇原始论文 + {len(papers) - primary_count} 篇辅助资料"
+    )
+    return mo.vstack(
+        [
+            course_styles(),
+            mo.Html(
+                f"""
+                <section class="gm-hero">
+                  <div class="gm-kicker">{escape(PARTS[spec.part])} · 部分末经典论文导读</div>
+                  <h1>{escape(spec.title)}</h1>
+                  <p class="gm-question"><strong>导读核心问题：</strong>{escape(spec.question)}</p>
+                  <div class="gm-paper-meta">
+                    <span><strong>阅读范围：</strong>{paper_summary}</span>
+                    <span><strong>论文坐标：</strong>{len(papers)} 篇</span>
+                    <span><strong>预计用时：</strong>{escape(duration)}</span>
+                  </div>
+                </section>
+                """
+            ),
+        ],
+        gap=0,
+    )
+
+
+def paper_guide_navigation(spec: PaperGuideSpec) -> mo.Html:
+    """Link one seminar inside an ordered part-end guide sequence."""
+
+    siblings = PAPER_GUIDES_AFTER_CHAPTER[spec.after_chapter]
+    position = siblings.index(spec)
+    previous_guide = siblings[position - 1] if position > 0 else None
+    next_guide = siblings[position + 1] if position + 1 < len(siblings) else None
+    previous_chapter = CHAPTERS[spec.after_chapter]
+    next_chapter = CHAPTERS.get(spec.after_chapter + 1)
+
+    def chapter_link(target: ChapterSpec, direction: str, label: str) -> str:
+        href = _workspace_notebook_href(f"{target.part}/{target.filename}")
+        return f"""
+        <a class="gm-chapter-nav-link {direction}"
+           href="{escape(href, quote=True)}">
+          <span class="gm-chapter-nav-label">{escape(label)}</span>
+          <span class="gm-chapter-nav-title">
+            第 {target.number} 章 · {escape(target.title)}
+          </span>
+        </a>
+        """
+
+    previous_link = (
+        _paper_navigation_link(previous_guide, direction="is-previous", label="← 上一篇导读")
+        if previous_guide is not None
+        else chapter_link(previous_chapter, "is-previous", "← 返回部分末章")
+    )
+    next_link = (
+        _paper_navigation_link(next_guide, direction="is-next", label="下一篇导读 →")
+        if next_guide is not None
+        else chapter_link(next_chapter, "is-next", "进入下一部分 →")
+        if next_chapter is not None
+        else '<span class="gm-chapter-nav-placeholder" aria-hidden="true"></span>'
+    )
+    home_href = _workspace_notebook_href("00_home.py")
+    return mo.Html(
+        f"""
+        <nav class="gm-chapter-nav" aria-label="论文导读导航">
+          {previous_link}
+          <a class="gm-chapter-nav-link is-home"
+             href="{escape(home_href, quote=True)}">
+            <span class="gm-chapter-nav-label">课程地图</span>
+            <span class="gm-chapter-nav-title">返回首页</span>
+          </a>
+          {next_link}
+        </nav>
+        """
+    )
+
+
+def paper_guide_footer(
+    spec: PaperGuideSpec,
+    takeaways: Sequence[str],
+    *,
+    bridge: str,
+) -> mo.Html:
+    summary = "\n".join(f"- {item}" for item in takeaways)
+    return mo.vstack(
+        [
+            mo.md(f"## 导读总结｜现在你应当能带走什么\n\n{summary}"),
+            mo.callout(mo.md(f"**研究桥梁**\n\n{bridge}"), kind="success"),
+            mo.md(
+                "> 如果论文中的某个英语句子、公式跳步或图注仍不清楚，请把页码和式号告诉老师。"
+            ),
+            paper_guide_navigation(spec),
+        ],
+        gap=0.8,
     )
 
 
@@ -579,6 +923,8 @@ def chapter_footer(spec: ChapterSpec, takeaways: Sequence[str]) -> mo.Html:
     bridge_title = (
         "课程结束后的下一步"
         if spec.number == max(CHAPTERS)
+        else "为什么此时要回到原始论文？"
+        if PAPER_GUIDES_AFTER_CHAPTER.get(spec.number)
         else "下一章为什么自然出现？"
     )
     return mo.vstack(

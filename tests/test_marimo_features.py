@@ -8,6 +8,7 @@ from src.teaching.components import (
     chapter_paper_trail,
     chapter_terminology,
     course_map_table,
+    course_styles,
     exercise_block,
     paper_guide_navigation,
     terminology_table,
@@ -19,6 +20,7 @@ from src.teaching.paper_guides import (
     PAPER_GUIDES_BEFORE_CHAPTER,
 )
 from src.teaching.terminology import TERMS, terms_for_chapter
+from src.visualization import COLORS, configure_matplotlib
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +34,96 @@ DISPLAY_HELPERS = {
     "exercise_block",
     "intuition_and_rigor",
 }
+
+
+def test_paper_evidence_cards_keep_explicit_contrast_in_dark_marimo_theme():
+    """浅色论文卡不能从深色 marimo 容器继承白色正文。"""
+
+    styles = course_styles()._repr_html_()
+    evidence_rule = styles.split(".gm-paper-evidence {", 1)[1].split("}", 1)[0]
+    guide_rule = styles.split(".gm-figure-guide section {", 1)[1].split("}", 1)[0]
+
+    assert "background: var(--gm-paper);" in evidence_rule
+    assert "color: var(--gm-ink);" in evidence_rule
+    assert "background: #f8fafc;" in guide_rule
+    assert "color: var(--gm-ink);" in guide_rule
+    caption_rule = styles.split(".gm-figure-caption {", 1)[1].split("}", 1)[0]
+    assert "background: var(--gm-paper);" in caption_rule
+    assert "color: var(--gm-ink);" in caption_rule
+
+
+def test_all_custom_light_surfaces_define_their_own_foreground_colors():
+    """自定义浅色表面不能依赖 marimo 当前主题的继承文字色。"""
+
+    styles = course_styles()._repr_html_()
+    surface_expectations = {
+        ".gm-hero {": ("background:", "color: var(--gm-ink);"),
+        ".gm-flow {": ("background:", "color: var(--gm-ink);"),
+        ".gm-paper-trail {": ("background:", "color: var(--gm-ink);"),
+        ".gm-paper-card {": ("background:", "color: var(--gm-ink);"),
+        ".gm-paper-evidence {": ("background:", "color: var(--gm-ink);"),
+        ".gm-paper-quote {": ("background:", "color: var(--gm-ink);"),
+        ".gm-figure-caption {": ("background:", "color: var(--gm-ink);"),
+        ".gm-figure-guide section {": ("background:", "color: var(--gm-ink);"),
+        ".gm-term-intro {": ("background:", "color: var(--gm-ink);"),
+        ".gm-chapter-nav-link {": ("background:", "color: var(--gm-ink);"),
+    }
+    for selector, declarations in surface_expectations.items():
+        rule = styles.split(selector, 1)[1].split("}", 1)[0]
+        for declaration in declarations:
+            assert declaration in rule, f"{selector} 缺少 {declaration}"
+
+
+def test_every_matplotlib_notebook_uses_theme_safe_shared_configuration():
+    for path in sorted(NOTEBOOKS.rglob("*.py")):
+        source = path.read_text(encoding="utf-8")
+        if "plt." in source or "matplotlib" in source:
+            assert "configure_matplotlib()" in source, path
+
+    configure_matplotlib()
+    import matplotlib.pyplot as plt
+
+    expected = {
+        "figure.facecolor": "#ffffff",
+        "axes.facecolor": "#ffffff",
+        "axes.labelcolor": "#1f2933",
+        "axes.titlecolor": "#1f2933",
+        "text.color": "#1f2933",
+        "xtick.color": "#475569",
+        "ytick.color": "#475569",
+        "legend.labelcolor": "#1f2933",
+    }
+    for key, value in expected.items():
+        assert plt.rcParams[key] == value
+
+
+def test_shared_text_palette_meets_wcag_aa_on_course_surfaces():
+    def luminance(hex_color: str) -> float:
+        channels = [int(hex_color[index : index + 2], 16) / 255 for index in (1, 3, 5)]
+        linear = [
+            channel / 12.92
+            if channel <= 0.04045
+            else ((channel + 0.055) / 1.055) ** 2.4
+            for channel in channels
+        ]
+        return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+    def contrast(foreground: str, background: str) -> float:
+        lighter, darker = sorted(
+            (luminance(foreground), luminance(background)), reverse=True
+        )
+        return (lighter + 0.05) / (darker + 0.05)
+
+    pairs = {
+        "正文/纸张": ("#1f2933", "#fffdf8"),
+        "辅助文字/纸张": ("#52606d", "#fffdf8"),
+        "链接/纸张": ("#1d4ed8", "#fffdf8"),
+        "下一章状态/浅蓝": ("#1d4ed8", "#dbeafe"),
+        "完成状态/浅绿": (COLORS["success"], "#dcfce7"),
+        "警告色/白色": (COLORS["warning"], "#ffffff"),
+    }
+    for label, (foreground, background) in pairs.items():
+        assert contrast(foreground, background) >= 4.5, label
 
 
 def _formal_notebooks() -> list[Path]:

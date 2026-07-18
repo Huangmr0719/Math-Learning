@@ -184,8 +184,10 @@ def _(COLORS, mo, plt):
     _descriptions = ["目标权衡", "优化动态", "估计/下界", "条件模型", "latent 类型", "后验族"]
     _fig, _ax = plt.subplots(figsize=(9, 4.6))
     _ax.scatter(_x, _y, s=600, color=[COLORS["prior"], COLORS["danger"], COLORS["model"], COLORS["data"], COLORS["success"], COLORS["muted"]], alpha=.82)
-    for _xi, _yi, _label, _description in zip(_x, _y, _labels, _descriptions):
-        _ax.text(_xi, _yi, f"{_label}\n{_description}", ha="center", va="center", fontsize=9, color="white", weight="bold")
+    for _index, (_xi, _yi, _label, _description) in enumerate(zip(_x, _y, _labels, _descriptions)):
+        # 第三个点使用橙色；小号白字在橙色上的对比度不足，因此改用深色。
+        _text_color = "#1f2933" if _index == 2 else "#ffffff"
+        _ax.text(_xi, _yi, f"{_label}\n{_description}", ha="center", va="center", fontsize=9, color=_text_color, weight="bold")
     _ax.set_xticks(range(5), ["目标/优化", "训练失败", "条件", "离散化", "分布变换"])
     _ax.set_yticks([])
     _ax.set_ylim(.3, 3.7)

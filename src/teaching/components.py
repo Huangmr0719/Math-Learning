@@ -37,6 +37,7 @@ def course_styles() -> mo.Html:
             --gm-muted: #52606d;
             --gm-paper: #fffdf8;
             --gm-blue: #2563eb;
+            --gm-blue-strong: #1d4ed8;
             --gm-green: #15803d;
             --gm-amber: #b45309;
             --gm-red: #b91c1c;
@@ -125,8 +126,14 @@ def course_styles() -> mo.Html:
             border: 1px solid #d9e2ec;
             border-radius: 12px;
             background: var(--gm-paper);
+            color: var(--gm-ink);
           }
-          .gm-paper-card h3 { margin: 0 0 .25rem; font-size: .98rem; }
+          .gm-paper-card h3 {
+            margin: 0 0 .25rem;
+            color: var(--gm-ink);
+            font-size: .98rem;
+          }
+          .gm-paper-card a { color: var(--gm-blue-strong); }
           .gm-paper-card p { margin: .28rem 0; line-height: 1.55; }
           .gm-paper-card ul { margin: .35rem 0 0; padding-left: 1.2rem; }
           .gm-paper-kind {
@@ -143,8 +150,22 @@ def course_styles() -> mo.Html:
             border: 1px solid #cbd5e1;
             border-radius: 14px;
             background: var(--gm-paper);
+            /*
+             * 证据卡刻意使用浅色“纸张”背景，因此前景色也必须在组件边界内
+             * 明确指定。若只依赖 marimo 外层主题，深色模式会把正文继承为白色，
+             * 最终形成白字叠浅灰底。
+             */
+            color: var(--gm-ink);
           }
-          .gm-paper-evidence h3 { margin: 0 0 .65rem; }
+          .gm-paper-evidence h3 {
+            margin: 0 0 .65rem;
+            color: var(--gm-ink);
+          }
+          .gm-paper-evidence a {
+            color: #1d4ed8;
+            text-decoration-thickness: .08em;
+            text-underline-offset: .14em;
+          }
           .gm-paper-quote {
             margin: .4rem 0 .75rem;
             padding: .7rem .85rem;
@@ -157,6 +178,16 @@ def course_styles() -> mo.Html:
             margin: .45rem 0;
             color: var(--gm-muted);
           }
+          .gm-figure-caption {
+            margin: -.2rem .2rem .15rem;
+            padding: .55rem .7rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            background: var(--gm-paper);
+            color: var(--gm-ink);
+            font-size: .84rem;
+            line-height: 1.55;
+          }
           .gm-figure-guide {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
@@ -165,10 +196,16 @@ def course_styles() -> mo.Html:
           }
           .gm-figure-guide section {
             padding: .7rem .8rem;
+            border: 1px solid #e2e8f0;
             border-radius: 10px;
             background: #f8fafc;
+            color: var(--gm-ink);
           }
-          .gm-figure-guide h4 { margin: 0 0 .35rem; font-size: .9rem; }
+          .gm-figure-guide h4 {
+            margin: 0 0 .35rem;
+            color: var(--gm-ink);
+            font-size: .9rem;
+          }
           .gm-figure-guide ul { margin: .2rem 0 0; padding-left: 1.15rem; }
           .gm-course-section { margin-top: 1.2rem; }
           .gm-course-section > h2 {
@@ -221,7 +258,7 @@ def course_styles() -> mo.Html:
           }
           .gm-course-progress.is-next {
             background: #dbeafe;
-            color: var(--gm-blue);
+            color: var(--gm-blue-strong);
             font-weight: 700;
           }
           .gm-course-link {
@@ -518,6 +555,7 @@ def paper_evidence_block(
     heading = f"{figure_number}｜{title}" if figure_number else title
     legend_items = "".join(f"<li>{escape(item)}</li>" for item in legend)
     image = None
+    image_caption = None
     if figure_path:
         absolute_path = Path(__file__).resolve().parents[2] / figure_path
         if not absolute_path.is_file():
@@ -527,7 +565,13 @@ def paper_evidence_block(
             alt=f"{paper.chinese_title} {figure_number}：{figure_caption}",
             width="100%",
             rounded=True,
-            caption=f"{figure_caption}｜原图来源：{paper.authors}，{paper.venue_year}",
+        )
+        image_caption = mo.Html(
+            f"""
+            <p class="gm-figure-caption">
+              {escape(figure_caption)}｜原图来源：{escape(paper.authors)}，{escape(paper.venue_year)}
+            </p>
+            """
         )
 
     source_context = mo.Html(
@@ -561,7 +605,11 @@ def paper_evidence_block(
         """
     )
     return mo.vstack(
-        [source_context, *([image] if image is not None else []), reading_guide],
+        [
+            source_context,
+            *([image, image_caption] if image is not None and image_caption is not None else []),
+            reading_guide,
+        ],
         gap=0.7,
     )
 

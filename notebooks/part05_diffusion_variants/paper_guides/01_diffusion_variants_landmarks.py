@@ -107,7 +107,24 @@ def _(COLORS, Patch, Rectangle, design_knob, mo, plt):
     for _index, (_key, _label, _color) in enumerate(_layers):
         _alpha = 1.0 if _key == design_knob.value else .2
         _ax.add_patch(Rectangle((_index, 0), .88, 1, color=_color, alpha=_alpha))
-        _ax.text(_index + .44, .5, _label, ha="center", va="center", rotation=90, fontsize=10)
+        # 高亮色块上单独选择文字色；橙色/琥珀色用深字，其余深色用白字。
+        # 未选中层透明度很低，统一使用深字即可。
+        _text_color = (
+            "#ffffff"
+            if _alpha == 1.0 and _key in {"prediction", "space", "solver", "continuous"}
+            else "#1f2933"
+        )
+        _ax.text(
+            _index + .44,
+            .5,
+            _label,
+            ha="center",
+            va="center",
+            rotation=90,
+            fontsize=10,
+            color=_text_color,
+            weight="bold",
+        )
         if _index < len(_layers) - 1:
             _ax.annotate("", xy=(_index + 1, .5), xytext=(_index + .88, .5),
                          arrowprops={"arrowstyle": "->", "color": "#64748b"})

@@ -122,7 +122,9 @@ def _(COLORS,coupling_marginals,coupling_mass,mo,np,plt):
     _image=_ax.imshow(_table,vmin=0,vmax=.5,cmap="Blues")
     for _i in range(2):
         for _j in range(2):
-            _ax.text(_j,_i,f"{_table[_i,_j]:.2f}",ha="center",va="center",color="#111827")
+            # 深蓝格使用白字，浅蓝格使用深字，避免 coupling 改变后数字消失。
+            _text_color="#ffffff" if _table[_i,_j]>=.28 else "#111827"
+            _ax.text(_j,_i,f"{_table[_i,_j]:.2f}",ha="center",va="center",color=_text_color,weight="bold")
     _ax.set_xticks([0,1],["target A","target B"])
     _ax.set_yticks([0,1],["source A","source B"])
     _ax.set_title("颜色与数字共同表示 joint probability")
